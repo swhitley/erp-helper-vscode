@@ -7,7 +7,7 @@
   "author": {
     "name": "Shannon Whitley"
   },
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "SEE LICENSE IN LICENSE",
   "keywords": ["workday", "xslt", "api"],
   "icon": "images/icon.png",
   "repository": "https://github.com/swhitley/erp-helper-vscode",

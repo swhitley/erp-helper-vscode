@@ -1,0 +1,23 @@
+div {
+    margin-bottom: 5px;
+}
+#drpWebService {
+    min-width: 250px;
+}
+
+#drpWebOperation, #drpConnection, #drpEnv {
+    min-width: 450px;
+}
+
+
+#container {height: 100%; width:100%; font-size:0;}
+
+#left, #right {display: inline-block; zoom: 1; vertical-align: top; font-size: 12px;}
+#left {width: 25%;}
+#right {width: 75%;}
+
+
+.container {height: 100%; width:100%; font-size:0;}
+.left, .right {display: inline-block; zoom: 1; vertical-align: top; font-size: 12px;}
+.left {width: 25%;}
+.right {width: 75%;}

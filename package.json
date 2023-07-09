@@ -1,0 +1,177 @@
+{
+  "name": "erp-helper",
+  "displayName": "ERP Helper",
+  "description": "Utilities for developing ERP integrations. Includes XSL transformation and Workday® API SOAP calls.",
+  "version": "1.0.0",
+  "publisher": "Whitley Media",
+  "author": {
+    "name": "Shannon Whitley"
+  },
+  "license": "SEE LICENSE IN LICENSE.md",
+  "keywords": ["workday", "xslt", "api"],
+  "icon": "images/icon.png",
+  "repository": "https://github.com/swhitley/erp-helper-vscode",
+  "engines": {
+    "vscode": "^1.79.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "submenus": [
+      {
+        "id": "erp-helper.submenu",
+        "label": "ERP Helper"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "group": "erp-helper",
+          "submenu": "erp-helper.submenu"
+        }
+      ],
+      "erp-helper.submenu": [
+        {
+          "command": "erp-helper.transform",
+          "group": "01"
+        },
+        {
+          "command": "erp-helper.web-services",
+          "group": "02"
+        },
+        {
+          "command": "erp-helper.api-calls",
+          "group": "02"
+        },
+        {
+          "command": "erp-helper.connections",
+          "group": "02"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "erp-helper.transform",
+        "title": "Transform (XSLT)",
+        "category": "ERP Helper"
+      },
+      {
+        "command": "erp-helper.web-services",
+        "title": "Web Services",
+        "category": "ERP Helper"
+      },
+      {
+        "command": "erp-helper.connections",
+        "title": "Connections",
+        "category": "ERP Helper"
+      },
+      {
+        "command": "erp-helper.api-calls",
+        "title": "API Calls",
+        "category": "ERP Helper"
+      }
+    ],
+    "configuration": {
+      "title": "ERP Helper",
+      "properties": {
+        "erp-helper.webServiceSelected": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Most recent Web Service selection under Web Services.",
+          "order": 1
+        },
+        "erp-helper.webOperationSelected": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Most recent Web Operation selection under Web Services.",
+          "order": 2
+        },
+        "erp-helper.connectionSelected": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Most recent Connection selection under Connections.",
+          "order": 3
+        },
+        "erp-helper.connectionList": {
+          "description": "Workday tenant connection information.  Passwords are saved in secret storage.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "properties",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of connection."
+              },
+              "env": {
+                "type": "string",
+                "description": "Env of connection."
+              },
+              "url": {
+                "type": "string",
+                "description": "URL of connection."
+              },
+              "tenant": {
+                "type": "string",
+                "description": "Tenant of connection."
+              },
+              "username": {
+                "type": "string",
+                "description": "Username of connection."
+              },
+              "password": {
+                "type": "string",
+                "description": "Password of connection."
+              }
+            }
+          },
+          "order": 4
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node ./esbuild.js && tsc -p ./",
+    "package": "NODE_ENV=production node ./esbuild.js && tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "20.2.5",
+    "@types/vscode": "^1.79.0",
+    "@types/vscode-webview": "^1.57.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "@vscode/test-electron": "^2.3.2",
+    "esbuild": "^0.16.17",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.2.2",
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "esbuild-plugin-copy": "^2.1.1",
+    "fast-xml-parser": "^4.2.5",
+    "saxon-js": "^2.5.0"
+  }
+}

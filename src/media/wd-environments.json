@@ -1,0 +1,222 @@
+{
+	"envs": {
+		"env": [
+			{
+				"e2-endpoint": "e2-enterprise-services1.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD1)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "wd3-e2.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD3)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "wd5-e2.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD5)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2.wd10.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD10)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2.wd12.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD12)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2.wd102.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD102)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2.wd103.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD103)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2.wd104.myworkdaygov.com",
+				"app-endpoint": "",
+				"_name": "Production (WD104)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2.wd105.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Production (WD105)",
+				"_type": "prod"
+			},
+			{
+				"e2-endpoint": "e2-impl-cci.workday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD2)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "wd3-e2-impl.workday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD3)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "wd5-impl-e2.workday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD5)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd10.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD10)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd12.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD12)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd102.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD102)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd103.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD103)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd104.myworkdaygov.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD104)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd105.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox (WD105)",
+				"_type": "sbox"
+			},
+			{
+				"e2-endpoint": "e2-impl-cci.workday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD2)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "wd3-e2-impl.workday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD3)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "wd5-impl-e2.workday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD5)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd10.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD10)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd12.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD12)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd102.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD102)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd103.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD103)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd104.myworkdaygov.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD104)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd105.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Sandbox Preview (WD105)",
+				"_type": "sboxPreview"
+			},
+			{
+				"e2-endpoint": "e2-impl-cci.workday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD2)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "wd3-e2-impl.workday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD3)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "wd5-impl-e2.workday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD5)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd10.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD10)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd12.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD12)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd102.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD102)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd103.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD103)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd104.myworkdaygov.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD104)",
+				"_type": "impl"
+			},
+			{
+				"e2-endpoint": "impl-e2.wd105.myworkday.com",
+				"app-endpoint": "",
+				"_name": "Implementation (WD105)",
+				"_type": "impl"
+			}
+		]
+	}
+}

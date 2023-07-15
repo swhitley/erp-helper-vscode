@@ -23,7 +23,7 @@ export class ConnectionsPanel {
     if (ConnectionsPanel.currentPanel) {
       ConnectionsPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
     } else {
-      const panel = vscode.window.createWebviewPanel("erp-helper", "Connections", vscode.ViewColumn.One, {
+      const panel = vscode.window.createWebviewPanel("erp-helper", "Connections (ERP Helper)", vscode.ViewColumn.One, {
          // Enable javascript in the webview
         enableScripts: true,
         retainContextWhenHidden: true,
@@ -65,16 +65,7 @@ export class ConnectionsPanel {
               this.btnDeleteOnClick(message.data);          
               return;
           case "rdgConnectionOnChange":
-            await vscode.workspace.getConfiguration().update('erp-helper.connectionSelected', text, true);
-            const conns = await vscode.workspace.getConfiguration().get('erp-helper.connectionList') as Array<typeof this._connection>;
-            const conn = conns.filter(item => item.name === text);
-            if (conn.length > 0) {
-              const password = await this._secrets?.get("erp-helper-" + text); 
-              if (password) {
-                conn[0].password = password;
-              }
-              this._panel.webview.postMessage({ command: 'rdgConnectionOnChange', message: conn[0] });
-            }
+            this._rdgConnectionOnChange(text);
             return;
         }
       },
@@ -98,15 +89,34 @@ export class ConnectionsPanel {
     this._panel.webview.postMessage({ command: 'formLoad', message: names });
   }
 
+  private async _rdgConnectionOnChange(text: string) {
+    await vscode.workspace.getConfiguration().update('erp-helper.connectionSelected', text, true);
+    const conns = await vscode.workspace.getConfiguration().get('erp-helper.connectionList') as Array<typeof this._connection>;
+    const conn = conns.filter(item => item.name === text);
+    if (conn.length > 0) {
+      if (this._secrets) {
+        await this._secrets.get("erp-helper-" + text).then(password => {
+          if (password) {
+            conn[0].password = password;
+            this._panel.webview.postMessage({ command: 'rdgConnectionOnChange', message: conn[0] });
+          }
+        });
+      }     
+    }
+  }
+
   public async btnTestOnClick(data: typeof this._connection) {
     const url = await this.ServiceUrlGet(data.env, data.username + "@" + data.tenant, data.password);
     if (url && url.length > 0 && url.indexOf("/ccx/service") > 0) {
       this._panel.webview.postMessage({ command: 'btnTestOnClick', message: url + "/" + data.tenant + "/" });
-      vscode.window.showInformationMessage("Successful test.  Click Save to store the connection.");
+      vscode.window.showInformationMessage("Successful test.\nClick Save to store the connection.", {modal: true});
     }
     else {
       if (url && url.length > 0) {
         vscode.window.showErrorMessage("Connection Test Failed for Url: " + url);
+      }
+      else {
+        vscode.window.showErrorMessage("Connection Test Failed.");
       }
     }
   }
@@ -130,10 +140,8 @@ export class ConnectionsPanel {
           item.username = data.username;  
           item.password = data.password;   
           exists = true;
-          if (data.password !== "[encrypted]") {
-            async () => {
-              await this._secrets?.store("erp-helper-" + data.name, data.password);  
-            };     
+          if (this._secrets) {            
+            this._secrets.store("erp-helper-" + data.name, data.password);
           }
         }
         item.password = "[encrypted]";
@@ -141,9 +149,9 @@ export class ConnectionsPanel {
       });
     }
     if (!exists) {
-      async () => {
-      await this._secrets?.store("erp-helper-" + data.name, data.password);   
-      };
+      if (this._secrets) {
+        this._secrets.store("erp-helper-" + data.name, data.password);
+      }
       data.password = "[encrypted]";
       connNew.push(data);                 
     }
@@ -188,7 +196,9 @@ export class ConnectionsPanel {
     var connNew: Array<typeof this._connection> = new Array<typeof this._connection>();
     connSave.forEach( async item => {
       if (item.name === data.name) {
-          await this._secrets?.delete("erp-helper-" + data.name);
+        if (this._secrets) {
+          await this._secrets.delete("erp-helper-" + data.name);
+        }
         exists = true;
       }
       if (!exists) {
@@ -282,10 +292,18 @@ export class ConnectionsPanel {
                 <label for="txtUsername">Username</label><br/>
                 <vscode-text-field id="txtUsername"/>
               </div>
-              <div class="textfield-container">
-                <label for="txtPassword">Password</label><br/>
-                <vscode-text-field id="txtPassword" type="password"/>
-              </div> 
+              <div class="container">
+                <div class="left">
+                  <div class="textfield-container">
+                    <label for="txtPassword">Password</label><br/>
+                    <vscode-text-field id="txtPassword" type="password" />
+                  </div> 
+                </div>
+                <div class="right">
+                <br/>
+                Stored in <vscode-link href="https://code.visualstudio.com/api/references/vscode-api#SecretStorage">Secret Storage</vscode-link>
+                </div>
+              </div>
               <div class="container">
               <div class="left"> 
                 <vscode-button id="btnTest">Test</vscode-button>

@@ -1,10 +1,11 @@
 import { provideVSCodeDesignSystem, 
   vsCodeButton, Button, vsCodeDropdown, vsCodeOption, Option, 
-  Dropdown, vsCodeTextField, TextField, DropdownOptions, vsCodeLink, vsCodeRadioGroup} from "@vscode/webview-ui-toolkit";
+  Dropdown, vsCodeTextField, TextField, DropdownOptions, vsCodeLink, 
+  vsCodeDivider, vsCodeRadioGroup} from "@vscode/webview-ui-toolkit";
 import { Drop } from "esbuild";
 
 provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeDropdown(), 
-  vsCodeOption(), vsCodeTextField(), vsCodeLink());
+  vsCodeOption(), vsCodeTextField(), vsCodeLink(), vsCodeDivider());
 
 const vscode = acquireVsCodeApi();
 
@@ -18,6 +19,10 @@ window.addEventListener('message', event => {
         break;
       case 'formLoadWebServices':
         webServicesLoad(message.message);
+        break;
+      case 'documentChanged':
+        const spnDocument = document.getElementById("spnDocument") as HTMLSpanElement;
+        spnDocument.textContent = message.document;
         break;
       case 'drpConnectionOnChange':
         connectionLoad(message.message);
@@ -40,34 +45,43 @@ function main() {
   });
 
   const drpConnection = document.getElementById("drpConnection") as Dropdown;
-  drpConnection?.addEventListener("change", handleConnectionOnChange);
+  drpConnection?.addEventListener("change", drpConnectionOnChange);
 
   const drpWebService = document.getElementById("drpWebService") as Dropdown;
-  drpWebService?.addEventListener("change", handleWebServiceOnChange);
+  drpWebService?.addEventListener("change", drpWebServiceOnChange);
 
   const genRequestButton = document.getElementById("btnCallApi") as Button;
-  genRequestButton?.addEventListener("click", handleBtnCallApiOnClick); 
+  genRequestButton?.addEventListener("click", btnCallApiOnClick); 
 
   const btnRefresh = document.getElementById("btnRefresh") as Button;
-  btnRefresh?.addEventListener("click", handleBtnRefreshOnClick); 
+  btnRefresh?.addEventListener("click", btnRefreshOnClick); 
+
+  const lnkConnections = document.getElementById("lnkConnections") as HTMLLinkElement;
+  lnkConnections?.addEventListener("click", lnkConnectionsOnClick); 
+
+  const lnkWebServices = document.getElementById("lnkWebServices") as HTMLLinkElement;
+  lnkWebServices?.addEventListener("click", lnkWebServicesOnClick); 
+
+  const lnkGetWorkers = document.getElementById("lnkGetWorkers") as HTMLLinkElement;
+  lnkGetWorkers?.addEventListener("click", lnkGetWorkersOnClick); 
 
 }
 
-function handleConnectionOnChange(this: any) {
+function drpConnectionOnChange(this: any) {
   vscode.postMessage({
     command: "drpConnectionOnChange",
     text: this.options[this.selectedIndex].value,
   });
 }
 
-function handleWebServiceOnChange(this: any) {
+function drpWebServiceOnChange(this: any) {
   vscode.postMessage({
     command: "drpWebServiceOnChange",
     text: this.options[this.selectedIndex].value,
   });
 }
 
-function handleBtnCallApiOnClick() {
+function btnCallApiOnClick() {
   const $ = getElements();
   let api = {
     tenant : $.txtTenant.value,
@@ -84,9 +98,30 @@ function handleBtnCallApiOnClick() {
   });
 }
 
-function handleBtnRefreshOnClick() {  
+function btnRefreshOnClick() {  
   vscode.postMessage({
-    command: "btnRefreshClick",
+    command: "btnRefreshOnClick",
+    message: ""
+  });
+}
+
+function lnkConnectionsOnClick() {  
+  vscode.postMessage({
+    command: "lnkConnectionsOnClick",
+    message: ""
+  });
+}
+
+function lnkWebServicesOnClick() {  
+  vscode.postMessage({
+    command: "lnkWebServicesOnClick",
+    message: ""
+  });
+}
+
+function lnkGetWorkersOnClick() {  
+  vscode.postMessage({
+    command: "lnkGetWorkersOnClick",
     message: ""
   });
 }
@@ -151,9 +186,12 @@ function connectionLoad(data: any) {
   if (data) {
     let $ = getElements();
     $.txtUrl.value = data.url;
+    $.lnkUrl.textContent = data.url;
     $.txtTenant.value = data.tenant;
     $.txtUsername.value = data.username;
     $.txtPassword.value = data.password;
+    $.spnTenant.textContent = data.tenant;
+    $.spnUsername.textContent = data.username;
   }
 }
 
@@ -163,11 +201,16 @@ function getElements() {
   const txtVersion = document.getElementById("txtVersion") as TextField;
   const txtName = document.getElementById("txtName") as TextField;
   const txtUrl = document.getElementById("txtUrl") as Dropdown;
+  const lnkUrl = document.getElementById("lnkUrl") as HTMLLinkElement;
   const txtTenant = document.getElementById("txtTenant") as TextField;
+  const spnTenant = document.getElementById("spnTenant") as HTMLSpanElement;
   const txtUsername = document.getElementById("txtUsername") as TextField;
+  const spnUsername = document.getElementById("spnUsername") as HTMLSpanElement;
   const txtPassword = document.getElementById("txtPassword") as TextField;
 
-  return {drpConnection, drpWebService, txtVersion, txtName, txtUrl, txtTenant, txtUsername, txtPassword};
+  return {drpConnection, 
+    drpWebService, txtVersion, txtName, txtUrl, lnkUrl, 
+    txtTenant, spnTenant, txtUsername, spnUsername, txtPassword};
 }
 
 

@@ -66,60 +66,58 @@ function btnGenRequestOnClick() {
 function webServicesLoad(text : string) {
   var select = document.getElementById("drpWebService") as Dropdown;
   if (select) {
+    select.selectedIndex = 0;
     const max = select.childNodes.length - 1;
     for(var i = max; i >= 0; i--) {
       select.childNodes[i].remove();
-    }
-  }    
-  var rows = text.split('\n');
-  var selectedValue = "";
-  rows.forEach(row => {
-    var opt = document.createElement('vscode-option') as Option;
-    opt = new Option(row.split('|')[0],  row.split('|')[1]);
-    if (row.split('|')[2] === 'Y') {
-      selectedValue = row.split('|')[1];
-      opt.selected = true;
-    }
-    // select 1st value if no saved selection
-    if (selectedValue.length === 0) {
-      selectedValue = row.split('|')[1];
-    }
-    if (select) {
+    }   
+    var rows = text.split('\n');
+    var selectedValue = "";
+    rows.forEach(row => {
+      var opt = document.createElement('vscode-option') as Option;
+      opt = new Option(row.split('|')[0],  row.split('|')[1]);
+      if (row.split('|')[2] === 'Y') {
+        selectedValue = row.split('|')[1];
+        opt.selected = true;
+      }
+      // select 1st value if no saved selection
+      if (selectedValue.length === 0) {
+        selectedValue = row.split('|')[1];
+      }
       select.appendChild(opt);
-    }
-  });
-  select.value = selectedValue;
-  vscode.postMessage({
-    command: "drpWebServiceOnChange",
-    text: selectedValue,
-  });
+    });
+    select.value = selectedValue;
+    vscode.postMessage({
+      command: "drpWebServiceOnChange",
+      text: selectedValue,
+    });
+  }
 }
 
 function webOperationsLoad(text : string) {
   var select = document.getElementById("drpWebOperation") as Dropdown;
   if (select) {
+    select.selectedIndex = 0;
     const max = select.childNodes.length - 1;
     for(var i = max; i >= 0; i--) {
       select.childNodes[i].remove();
-    }
-  }    
-  var rows = text.split('\n');
-  var selectedValue = "";
-  rows.forEach(row => {
-    var opt = document.createElement('vscode-option') as Option;
-    opt = new Option(row.split('|')[0],  row.split('|')[1]);
-    if (row.split('|')[2] === 'Y') {
-      opt.selected = true;
-      selectedValue = row.split('|')[1];
-    }
-    // select 1st value if no saved selection
-    if (selectedValue.length === 0) {
-      selectedValue = row.split('|')[1];
-    }
-    if (select) {
-      select.appendChild(opt);
-    }
-  });
-  select.value = selectedValue;
+    }    
+    var rows = text.split('\n');
+    var selectedValue = "";
+    rows.forEach(row => {
+      var opt = document.createElement('vscode-option') as Option;
+      opt = new Option(row.split('|')[0],  row.split('|')[1]);
+      if (row.split('|')[2] === 'Y') {
+        opt.selected = true;
+        selectedValue = row.split('|')[1];
+      }
+      // select 1st value if no saved selection
+      if (selectedValue.length === 0) {
+        selectedValue = row.split('|')[1];
+      }
+        select.appendChild(opt);
+    });
+    select.value = selectedValue;
+  }
 }
 

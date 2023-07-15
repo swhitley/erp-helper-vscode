@@ -66,6 +66,7 @@ function main() {
 }
 
 function formLoad(text : string) {
+  btnNewOnClick();
   let $ = getElements();
   const rows = text.split('\n');
   const max = $.rdgConnection.childNodes.length - 1;
@@ -185,6 +186,8 @@ function btnNewOnClick() {
   $.txtTenant.value = '';
   $.txtUsername.value = '';
   $.txtPassword.value = '';
+  const btnSave = document.getElementById("btnSave") as Button;
+  btnSave.disabled = true;
  
 }
 
@@ -222,6 +225,5 @@ function urlSet(value: string) {
   const lnkUrl = document.getElementById("lnkUrl") as Link;
   txtUrl.value = value;
   lnkUrl.innerHTML = value;
-  lnkUrl.href = value;
 }
 

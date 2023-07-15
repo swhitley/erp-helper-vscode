@@ -23,7 +23,7 @@ export class WebServicesPanel {
     if (WebServicesPanel.currentPanel) {
       WebServicesPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
     } else {
-      const panel = vscode.window.createWebviewPanel("erp-helper", "Web Services", vscode.ViewColumn.One, {
+      const panel = vscode.window.createWebviewPanel("erp-helper", "Web Services (ERP Helper)", vscode.ViewColumn.One, {
         enableScripts: true,
         retainContextWhenHidden: true,
         enableCommandUris: true,

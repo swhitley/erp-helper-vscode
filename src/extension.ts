@@ -13,20 +13,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const webServicesCommand = vscode.commands.registerCommand("erp-helper.web-services", () => {
 		WebServicesPanel.render(context.extensionUri);
-	  });
+	});
 
-	  const apiCallsCommand = vscode.commands.registerCommand("erp-helper.api-calls", () => {
-		ApiCallsPanel.render(context.extensionUri, context.secrets);
-	  });	  
+	const apiCallsCommand = vscode.commands.registerCommand("erp-helper.api-calls", () => {
+	ApiCallsPanel.render(context.extensionUri, context.secrets);
+	});	  
 
-	  const connectionsCommand = vscode.commands.registerCommand("erp-helper.connections", () => {
-		ConnectionsPanel.render(context.extensionUri, context.secrets);
-	  });
+	const connectionsCommand = vscode.commands.registerCommand("erp-helper.connections", () => {
+	ConnectionsPanel.render(context.extensionUri, context.secrets);
+	});
 	  
-	  context.subscriptions.push(webServicesCommand);
-	  context.subscriptions.push(connectionsCommand);
-	  context.subscriptions.push(apiCallsCommand);
-	  context.subscriptions.push(transformDisposable);
+	context.subscriptions.push(webServicesCommand);
+	context.subscriptions.push(connectionsCommand);
+	context.subscriptions.push(apiCallsCommand);
+	context.subscriptions.push(transformDisposable);
 	
 }
 

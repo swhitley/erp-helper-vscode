@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
-import { Soap } from "../utilities/soap";
+import { XmlUtil } from "../utilities/xmlutil";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -24,19 +24,22 @@ export class ApiCallsPanel {
     this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
     this._setWebviewMessageListener(this._panel.webview);
     this._secrets = secrets;
+    vscode.window.onDidChangeActiveTextEditor(this._onDidChangeActiveTextEditor, this, this._disposables);
   }
 
   public static render(extensionUri: vscode.Uri, secrets: vscode.SecretStorage) {
+    // Save the text from the active editor.
     if (vscode.window.activeTextEditor) {
       this._xml = vscode.window.activeTextEditor.document.getText();
     }
+    // Save the label from the active editor.
     if (vscode.window.tabGroups.activeTabGroup.activeTab) {
-      this._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab?.label;
+      this._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label;
     }
     if (ApiCallsPanel.currentPanel) {
       ApiCallsPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
     } else {
-      const panel = vscode.window.createWebviewPanel("erp-helper", "API Calls", vscode.ViewColumn.One, {
+      const panel = vscode.window.createWebviewPanel("erp-helper", "API Calls (ERP Helper)", vscode.ViewColumn.One, {
         enableScripts: true,
         retainContextWhenHidden: true,
         enableCommandUris: true,
@@ -60,6 +63,15 @@ export class ApiCallsPanel {
     }
   }
 
+  private _onDidChangeActiveTextEditor() {
+    if (vscode.window.activeTextEditor) {
+      if (vscode.window.tabGroups.activeTabGroup.activeTab) {
+        ApiCallsPanel._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label;
+        this._panel.webview.postMessage({ command: 'documentChanged', document: ApiCallsPanel._tabLabel });
+      }
+    }
+  }
+
   private _setWebviewMessageListener(webview: vscode.Webview) {
     webview.onDidReceiveMessage(
       async (message: any) => {
@@ -72,14 +84,23 @@ export class ApiCallsPanel {
           case "formLoadWebServices":
             await this._formLoadWebServices();
             return;
-            case "drpConnectionOnChange":
-              await this._drpConnectionOnChange(text);
-              return;
+          case "drpConnectionOnChange":
+            await this._drpConnectionOnChange(text);
+            return;
           case "drpWebServiceOnChange":
             await this._drpWebServiceOnChange(text);
             return;
           case "btnCallApiOnClick":
             await this._btnCallApiOnClick(message.data);
+            return;
+          case "lnkConnectionsOnClick":
+            vscode.commands.executeCommand("erp-helper.connections");
+            return;
+          case "lnkWebServicesOnClick":
+            vscode.commands.executeCommand("erp-helper.web-services");
+            return;
+          case "lnkGetWorkersOnClick":
+            this._lnkGetWorkersOnClick();
             return;
         }
       },
@@ -102,6 +123,7 @@ export class ApiCallsPanel {
 
     if (names.length > 0) {
       this._panel.webview.postMessage({ command: 'formLoad', message: names });
+      this._panel.webview.postMessage({ command: 'documentChanged', document: ApiCallsPanel._tabLabel });
     }
   }
 
@@ -153,11 +175,13 @@ export class ApiCallsPanel {
 
   private async soapCall(api: any) {
     try {
+      // Remove an existing XML declaration.
       var xml = ApiCallsPanel._xml; 
       const declIndex = xml.indexOf("?>");
       if (declIndex > 0) {
         xml = xml.substring(declIndex + 2);
-      }     
+      }
+      // Extract the request from an existing SOAP body.     
       let xmlLC = xml.toLowerCase();
       let bodyEnd = xmlLC.lastIndexOf(":body");
       if (bodyEnd > 0) {
@@ -168,10 +192,10 @@ export class ApiCallsPanel {
         bodyStart = xml.indexOf(">", bodyStart);
         xml = xml.substring(++bodyStart);
       } 
-      xml = Soap.soapHeader + xml + Soap.soapFooter;
+      // Wrap the request in a SOAP envelope.
+      xml = XmlUtil.soapHeader + xml + XmlUtil.soapFooter;
       xml = xml.replace("{username}", api.username + "@" + api.tenant);
       xml = xml.replace("{password}", api.password);
-
       if (api) {
         let url = api.url + api.service + "/" + api.version;
         const headers = {
@@ -190,13 +214,13 @@ export class ApiCallsPanel {
         }    
         ).then(async (response) => {
           const xml = response.data;
-          const soap= new Soap();
-          var result = await soap.transform(xml, Soap.xsltTidy); 
+          const xmlUtil = new XmlUtil();
+          var result = await xmlUtil.transform(xml, XmlUtil.xsltTidy); 
           var option = {content: result, language: "xml"};
           await vscode.workspace.openTextDocument(option)
           .then((doc: vscode.TextDocument) => {
               vscode.window.showTextDocument(doc, vscode.ViewColumn.Active, false); 
-        });
+          });
         }).catch((ex) => {
           vscode.window.showErrorMessage("Soap Fail: " + ex );
         });        
@@ -238,12 +262,14 @@ export class ApiCallsPanel {
           throw new Error("No connections found for " + text);
         }
         if (conn.length === 1) {
-          var password = await this._secrets?.get("erp-helper-" + text);
-            if (password) {
-              conn[0].password = password;
-            }
-            this._panel.webview.postMessage({ command: 'drpConnectionOnChange', message: conn[0] });
-                  
+          if (this._secrets) {
+            await this._secrets.get("erp-helper-" + text).then(password => {
+              if (password) {
+                conn[0].password = password;
+                this._panel.webview.postMessage({ command: 'drpConnectionOnChange', message: conn[0] });
+              }
+            });            
+          }                  
         }
         else {
           throw new Error("More than one connection found for " + text);
@@ -266,6 +292,15 @@ export class ApiCallsPanel {
     }
   }
 
+  private async _lnkGetWorkersOnClick() {
+    const xml = XmlUtil.getWorkersSample;
+    var option = {content: xml, language: "xml"};
+    await vscode.workspace.openTextDocument(option)
+    .then((doc: vscode.TextDocument) => {
+        vscode.window.showTextDocument(doc, vscode.ViewColumn.Active, false); 
+    });
+  }
+
   private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
     const webviewUri = getUri(webview, extensionUri, ["out", "apicalls.js"]);
     const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
@@ -282,21 +317,47 @@ export class ApiCallsPanel {
           <title>ERP Helper</title>
         </head>
         <body>
-          <h1>Make API Requests using a Document</h1>
+          <h1>API Request from a Document</h1>
+          <div>
+          <ol>
+            <li>Configure a tenant connection on ERP Helper's <vscode-link id="lnkConnections">Connections</vscode-link> page.</li>
+            <li>Create an XML request document. (Two helper resources are available below.)</li>
+              <ul>
+                <li>ERP Helper's <vscode-link id="lnkWebServices">Web Services</vscode-link> page.</li>
+                <li><vscode-link id="lnkGetWorkers">Get Workers</vscode-link> example.</li>
+              </ul>            
+            <li>In the request document, right-click and select <i>ERP Helper</i> > <i>API Calls.</i></li>
+          </ol>
+          </div>
+          <br/>
+          <strong>Current Document:</strong> <span id="spnDocument"></span>
+          <br/>
+          <br/>
+          <vscode-divider></vscode-divider>
+          <br/>
           <div class="dropdown-container">
             <label for="drpConnection">Connection</label><br/>
             <vscode-dropdown id="drpConnection" />
           </div>
           <br/>
+          <div class="container">
+          <div class="left">
           <div class="textfield-container">
-            <label for="txtTenant">Tenant</label><br/>
-            <vscode-text-field id="txtTenant" readonly="true" />
+            <label for="txtTenant"><u>Tenant</u></label><br/>
+            <span id="spnTenant"></span>
           </div>
+          </div>
+          <div class="right">
+          <div class="textfield-container">
+            <label for="txtUsername"><u>Username</u></label><br/>
+            <span id="spnUsername"></span>
+          </div>
+          </div>
+          </div>
+          <vscode-link id="lnkUrl" href=""></vscode-link>
           <br/>
-          <div class="textfield-container">
-            <label for="txtUsername">Username</label><br/>
-            <vscode-text-field id="txtUsername" readonly="true"/>
-          </div>
+          <vscode-divider></vscode-divider>
+          <br/>
           <div class="dropdown-container">
             <label for="drpWebService">Service</label><br/>
             <vscode-dropdown id="drpWebService"/>
@@ -304,14 +365,15 @@ export class ApiCallsPanel {
           <br/>
           <vscode-text-field placeholder="v39.1" type="text" id="txtVersion" name="txtVersion" value="v39.1">Version</vscode-text-field>
           <br/>
+          <input type="hidden" id="txtTenant"/>
           <input type="hidden" id="txtUrl"/>
+          <input type="hidden" id="txtUsername"/>
           <input type="hidden" id="txtPassword"/>
-          <vscode-link id="lnkUrl" href=""></vscode-link>
           <br/><br/>
           <vscode-button id="btnCallApi">Call API</vscode-button>
-          <br/><br/>
           <br/>
-         
+          <br/>
+          <br/>
           <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
         </body>
       </html>

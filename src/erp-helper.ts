@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'; 
-import { Soap } from "./utilities/soap";  
+import { XmlUtil } from "./utilities/xmlutil";  
     
 export async function transform() {       
     let xml = "";
@@ -20,7 +20,7 @@ export async function transform() {
     try {
         const text = activeEditor.document.getText();
         let index = activeTabGroup.tabs.indexOf(activeTabGroup.activeTab);
-        if (text.indexOf("<xsl:stylesheet") >= 0) {
+        if (text.toLowerCase().indexOf("<xsl:stylesheet") >= 0) {
             xslt = text;
             xsltIndex = index;
             index--;
@@ -49,8 +49,8 @@ export async function transform() {
         }
 
         try {
-            const soap= new Soap();
-            var result = await soap.transform(xml, xslt);         
+            const xmlUtil = new XmlUtil();
+            var result = await xmlUtil.transform(xml, xslt);         
         }
         catch(ex){
             vscode.window.showErrorMessage("Transformation Error: " + ex);

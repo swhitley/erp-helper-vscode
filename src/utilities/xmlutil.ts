@@ -1,6 +1,15 @@
 const saxonJS = require('saxon-js');    
 
-export class Soap {
+export class XmlUtil {
+
+  public static getWorkersSample = `<?xml version="1.0" encoding="UTF-8"?>
+<wd:Get_Workers_Request xmlns:wd="urn:com.workday/bsvc" wd:version="v39.1">
+  <wd:Request_References wd:Ignore_Invalid_References="true" wd:Skip_Non_Existing_Instances="true">
+    <wd:Worker_Reference>
+      <wd:ID wd:type="Employee_ID">{Employee ID}</wd:ID>
+    </wd:Worker_Reference>
+  </wd:Request_References>
+</wd:Get_Workers_Request>`;
 
   public static soapHeader = `<?xml version="1.0" encoding="UTF-8"?>
 <xsd:Envelope xmlns:xsd="http://schemas.xmlsoap.org/soap/envelope/">

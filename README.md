@@ -1,4 +1,4 @@
-# erp-helper README
+# ERP Helper for VSCode
 
  Utilities for developing ERP integrations. Includes XSL transformation and Workday® API SOAP calls. 
 

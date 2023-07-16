@@ -14,14 +14,14 @@ Install ERP Helper from the [Visual Studio Code Marketplace](https://marketplace
 
 ### How to use
 
-From any open editor, right-click (Windows) or control-click (Mac) and locate ERP Helper on the context menu.
+From any open editor, right-click (Windows) or control-click (Mac) and locate <i>ERP Helper</i> on the context menu.
 
 ### XML Transformations (XSLT)
 To perform the most common function (XML transformation with XSLT) follow these instructions:
 1. Open the XML document in an editor window.
 2. Open the XSLT document in an editor window to the right of the XML document (as shown in the image below). 
    To ensure that your final output is formatted correctly, include an output element with the indent attribute: <code><xsl:output method="xml" indent="yes" /></code>
-3. Right-click or control-click to reveal the context menu.  select <i>ERP Helper</i> > <i>Transform (XSLT)</i>.
+3. Right-click or control-click to reveal the context menu.  Select <i>ERP Helper</i> > <i>Transform (XSLT)</i>.
 4. The transformed document will open in a new window.
 
 ##   

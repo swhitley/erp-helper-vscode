@@ -10,6 +10,7 @@ export class ConnectionsPanel {
   private _disposables: vscode.Disposable[] = [];
   private readonly _connection = { name: "", env: "", url: "", tenant: "", username: "", password: "" };
   private _secrets: vscode.SecretStorage | undefined;
+  private readonly _encrypted = "[encrypted]";
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, secrets: vscode.SecretStorage) {
     this._panel = panel;
@@ -144,7 +145,7 @@ export class ConnectionsPanel {
             this._secrets.store("erp-helper-" + data.name, data.password);
           }
         }
-        item.password = "[encrypted]";
+        item.password = this._encrypted;
         connNew.push(item);      
       });
     }
@@ -152,7 +153,7 @@ export class ConnectionsPanel {
       if (this._secrets) {
         this._secrets.store("erp-helper-" + data.name, data.password);
       }
-      data.password = "[encrypted]";
+      data.password = this._encrypted;
       connNew.push(data);                 
     }
     await vscode.workspace.getConfiguration().update('erp-helper.connectionList', connNew, true);   
@@ -179,7 +180,11 @@ export class ConnectionsPanel {
       }).then((response) => {
         result = response.data;
       }).catch((ex) => {
-        vscode.window.showErrorMessage("Service Url lookup error: " + ex);
+        let error = ex;
+        if (ex.response) {
+          error = ex.response.data;
+        }
+        vscode.window.showErrorMessage("Service Url lookup error: " + error);
       });
     }
     catch(ex) {

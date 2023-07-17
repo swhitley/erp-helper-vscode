@@ -56,11 +56,20 @@ export class WebServicesPanel {
           case "formLoad":
             await this._formLoad();
             return;
+          case "txtVersionLoad":
+            const version = await vscode.workspace.getConfiguration().get('erp-helper.apiVersionSaved');
+            if (this._panel) {
+              this._panel.webview.postMessage({ command: 'txtVersionLoad', message: version });
+            }
+            return;
           case "drpWebServiceOnChange":
             await this._drpWebServiceOnChange(text);
             return;
           case "drpWebOperationOnChange":
             await vscode.workspace.getConfiguration().update('erp-helper.webOperationSelected', text, true);
+            return;
+          case "txtVersionOnChange":
+            await vscode.workspace.getConfiguration().update('erp-helper.apiVersionSaved', text, true);
             return;
           case "btnGenRequestOnClick":
             await this._btnGenRequestOnClick(text);

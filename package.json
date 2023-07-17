@@ -95,6 +95,15 @@
           "description": "Most recent Web Operation selection under Web Services.",
           "order": 2
         },
+        "erp-helper.apiVersionSaved": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Most recent Workday API Version under Web Services.",
+          "order": 3
+        },        
         "erp-helper.connectionSelected": {
           "type": [
             "string",
@@ -102,7 +111,7 @@
           ],
           "default": null,
           "description": "Most recent Connection selection under Connections.",
-          "order": 3
+          "order": 4
         },
         "erp-helper.connectionList": {
           "description": "Workday tenant connection information.  Passwords are saved in secret storage.",
@@ -137,7 +146,7 @@
               }
             }
           },
-          "order": 4
+          "order": 5
         }
       }
     }

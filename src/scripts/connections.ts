@@ -164,14 +164,15 @@ function btnSaveOnClick() {
 
 function btnDeleteOnClick() {
   let $ = getElements();
-  const del = {
-    "name" : $.txtName.value,
-  };
-  vscode.postMessage({
-    command: "btnDeleteOnClick",
-    data: del,
-  });
-
+  if ($.rdgConnection && $.rdgConnection.value.length > 0) {
+    const del = {
+      "name" : $.rdgConnection.value,
+    };
+    vscode.postMessage({
+      command: "btnDeleteOnClick",
+      data: del,
+    });
+  }
 }
 
 function btnNewOnClick() {

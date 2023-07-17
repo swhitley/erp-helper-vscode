@@ -13,12 +13,19 @@ window.addEventListener("load", main);
 
 window.addEventListener('message', event => {
   const message = event.data;
+  const text = message.message;
   switch (message.command) {
       case 'formLoad':
         connectionsLoad(message.message);
         break;
       case 'formLoadWebServices':
         webServicesLoad(message.message);
+        break;
+      case "txtVersionLoad":
+        const txtVersion = document.getElementById("txtVersion") as HTMLInputElement;
+        if (text && text.length > 0) {
+          txtVersion.value = text;
+        }
         break;
       case 'documentChanged':
         const spnDocument = document.getElementById("spnDocument") as HTMLSpanElement;
@@ -35,12 +42,17 @@ window.addEventListener('message', event => {
 function main() {  
 
   vscode.postMessage({
-    command: "formLoadWebServices",
+    command: "formLoad",
     text: "",
   });
   
   vscode.postMessage({
-    command: "formLoad",
+    command: "formLoadWebServices",
+    text: "",
+  });
+
+  vscode.postMessage({
+    command: "txtVersionLoad",
     text: "",
   });
 
@@ -65,6 +77,9 @@ function main() {
   const lnkGetWorkers = document.getElementById("lnkGetWorkers") as HTMLLinkElement;
   lnkGetWorkers?.addEventListener("click", lnkGetWorkersOnClick); 
 
+  const txtVersion = document.getElementById("txtVersion") as TextField;
+  txtVersion?.addEventListener("change", txtVersionOnChange);
+
 }
 
 function drpConnectionOnChange(this: any) {
@@ -78,6 +93,13 @@ function drpWebServiceOnChange(this: any) {
   vscode.postMessage({
     command: "drpWebServiceOnChange",
     text: this.options[this.selectedIndex].value,
+  });
+}
+
+function txtVersionOnChange(this: any) {
+  vscode.postMessage({
+    command: "txtVersionOnChange",
+    text: this.value,
   });
 }
 

@@ -84,12 +84,21 @@ export class ApiCallsPanel {
           case "formLoadWebServices":
             await this._formLoadWebServices();
             return;
+          case "txtVersionLoad":
+            const version = await vscode.workspace.getConfiguration().get('erp-helper.apiVersionSaved');
+            if (this._panel) {
+              this._panel.webview.postMessage({ command: 'txtVersionLoad', message: version });
+            }
+            return;            
           case "drpConnectionOnChange":
             await this._drpConnectionOnChange(text);
             return;
           case "drpWebServiceOnChange":
             await this._drpWebServiceOnChange(text);
             return;
+          case "txtVersionOnChange":
+            await vscode.workspace.getConfiguration().update('erp-helper.apiVersionSaved', text, true);
+            return;            
           case "btnCallApiOnClick":
             await this._btnCallApiOnClick(message.data);
             return;
@@ -222,7 +231,11 @@ export class ApiCallsPanel {
               vscode.window.showTextDocument(doc, vscode.ViewColumn.Active, false); 
           });
         }).catch((ex) => {
-          vscode.window.showErrorMessage("Soap Fail: " + ex );
+          let error = ex;
+          if (ex.response) {
+            error = ex.response.data;
+          }
+          vscode.window.showErrorMessage("Soap Fail: " + error );
         });        
       }
     }

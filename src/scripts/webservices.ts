@@ -11,13 +11,21 @@ window.addEventListener("load", main);
 
 window.addEventListener('message', event => {
   const message = event.data;
+  const text = message.message;
   switch (message.command) {
       case 'formLoad':
           webServicesLoad(message.message);
           break;
-       case 'drpWebServiceOnChange':
+      case 'drpWebServiceOnChange':
           webOperationsLoad(message.message);
           break;
+      case "txtVersionLoad":
+        const txtVersion = document.getElementById("txtVersion") as HTMLInputElement;
+        if (text && text.length > 0) {
+          txtVersion.value = text;
+        }
+        break;
+      
     }
 });
 
@@ -28,6 +36,11 @@ function main() {
     text: "",
   });
 
+  vscode.postMessage({
+    command: "txtVersionLoad",
+    text: "",
+  });
+
   const drpWebService = document.getElementById("drpWebService") as Dropdown;
   drpWebService?.addEventListener("change", drpWebServiceOnChange);
 
@@ -35,7 +48,10 @@ function main() {
   drpWebOperation?.addEventListener("change", drpWebOperationOnChange); 
 
   const btnGenRequest = document.getElementById("btnGenRequest") as Button;
-  btnGenRequest?.addEventListener("click", btnGenRequestOnClick); 
+  btnGenRequest?.addEventListener("click", btnGenRequestOnClick);
+  
+  const txtVersion = document.getElementById("txtVersion") as TextField;
+  txtVersion?.addEventListener("change", txtVersionOnChange);
 
 }
 
@@ -50,6 +66,13 @@ function drpWebOperationOnChange(this: any) {
   vscode.postMessage({
     command: "drpWebOperationOnChange",
     text: this.options[this.selectedIndex].value,
+  });
+}
+
+function txtVersionOnChange(this: any) {
+  vscode.postMessage({
+    command: "txtVersionOnChange",
+    text: this.value,
   });
 }
 

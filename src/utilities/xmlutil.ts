@@ -2,8 +2,28 @@ const saxonJS = require('saxon-js');
 
 export class XmlUtil {
 
+  public static styleSheetStart = `<?xml version="1.0" encoding="UTF-8"?>
+  <xsl:stylesheet xmlns:wd="urn:com.workday/bsvc" version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <!-- Helpers:  
+  <xsl:value-of select="" /> 
+  <xsl:param name="" select="" /> 
+  <xsl:variable name="" select="" />
+  <xsl:value-of select="format-date(current-date(), '[Y0001]-[M01]-[D01]')" />
+  -->
+    <xsl:output method="xml" indent="yes"/>
+    <xsl:template match="/">
+      <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+        <Body>
+          <xsl:for-each select="wd:Report_Data/wd:Report_Entry">`;
+  
+  public static styleSheetEnd = `        </xsl:for-each>
+      </Body>
+    </env:Envelope>
+  </xsl:template>
+</xsl:stylesheet>`;
+
   public static getWorkersSample = `<?xml version="1.0" encoding="UTF-8"?>
-<wd:Get_Workers_Request xmlns:wd="urn:com.workday/bsvc" wd:version="v39.1">
+<wd:Get_Workers_Request xmlns:wd="urn:com.workday/bsvc" wd:version="v40.2">
   <wd:Request_References wd:Ignore_Invalid_References="true" wd:Skip_Non_Existing_Instances="true">
     <wd:Worker_Reference>
       <wd:ID wd:type="Employee_ID">{Employee ID}</wd:ID>
@@ -11,7 +31,7 @@ export class XmlUtil {
   </wd:Request_References>
 </wd:Get_Workers_Request>`;
 
-  public static soapHeader = `<?xml version="1.0" encoding="UTF-8"?>
+  public static soapStart = `<?xml version="1.0" encoding="UTF-8"?>
 <xsd:Envelope xmlns:xsd="http://schemas.xmlsoap.org/soap/envelope/">
   <xsd:Header>
     <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -23,7 +43,7 @@ export class XmlUtil {
   </xsd:Header>
   <env:Body xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">`;
 
-  public static soapFooter = `</env:Body>
+  public static soapEnd = `</env:Body>
 </xsd:Envelope>`;
 
   public static xsltTidy = `<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -52,4 +72,14 @@ export class XmlUtil {
     return result;
 
   }
+
+  public declarationRemove(xml: string) {
+    // Remove an existing XML declaration.
+    const declIndex = xml.indexOf("?>");
+    if (declIndex > 0) {
+      xml = xml.substring(declIndex + 2);
+    }
+    return xml;
+  }
+
 }

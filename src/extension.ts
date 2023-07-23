@@ -11,6 +11,14 @@ export function activate(context: vscode.ExtensionContext) {
 		erpHelper.transform();	
 	});	
 
+	let xsltWrapperDisposable = vscode.commands.registerCommand("erp-helper.xslt-wrapper", async () => {
+		erpHelper.xsltWrapper();	
+	});	
+	
+	let soapWrapperDisposable = vscode.commands.registerCommand("erp-helper.soap-wrapper", async () => {
+		erpHelper.soapWrapper();	
+	});		
+
 	const webServicesCommand = vscode.commands.registerCommand("erp-helper.web-services", () => {
 		WebServicesPanel.render(context.extensionUri);
 	});
@@ -27,6 +35,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(connectionsCommand);
 	context.subscriptions.push(apiCallsCommand);
 	context.subscriptions.push(transformDisposable);
+	context.subscriptions.push(xsltWrapperDisposable);
+	context.subscriptions.push(soapWrapperDisposable);
 	
 }
 

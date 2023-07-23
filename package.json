@@ -2,13 +2,17 @@
   "name": "erp-helper",
   "displayName": "ERP Helper",
   "description": "Utilities for developing ERP integrations. Includes XSL transformation and Workday® API SOAP calls.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "WhitleyMedia",
   "author": {
     "name": "Shannon Whitley"
   },
   "license": "SEE LICENSE IN LICENSE",
-  "keywords": ["workday", "xslt", "api"],
+  "keywords": [
+    "workday",
+    "xslt",
+    "api"
+  ],
   "icon": "images/icon.png",
   "repository": "https://github.com/swhitley/erp-helper-vscode",
   "engines": {
@@ -24,7 +28,11 @@
       {
         "id": "erp-helper.submenu",
         "label": "ERP Helper"
-      }
+      },
+      {
+        "id": "erp-helper.wrapper-submenu",
+        "label": "Document Wrappers"
+      }      
     ],
     "menus": {
       "editor/context": [
@@ -39,17 +47,31 @@
           "group": "01"
         },
         {
-          "command": "erp-helper.web-services",
+          "submenu": "erp-helper.wrapper-submenu",
           "group": "02"
+        },        
+        {
+          "command": "erp-helper.web-services",
+          "group": "03"
         },
         {
           "command": "erp-helper.api-calls",
-          "group": "02"
+          "group": "03"
         },
         {
           "command": "erp-helper.connections",
-          "group": "02"
+          "group": "03"
         }
+      ],
+      "erp-helper.wrapper-submenu": [
+        {
+          "command": "erp-helper.xslt-wrapper",
+          "group": "01"
+        },
+        {
+          "command": "erp-helper.soap-wrapper",
+          "group": "01"
+        }        
       ]
     },
     "commands": [
@@ -58,6 +80,16 @@
         "title": "Transform (XSLT)",
         "category": "ERP Helper"
       },
+      {
+        "command": "erp-helper.xslt-wrapper",
+        "title": "XSLT Wrapper",
+        "category": "ERP Helper"
+      },    
+      {
+        "command": "erp-helper.soap-wrapper",
+        "title": "SOAP Wrapper",
+        "category": "ERP Helper"
+      },      
       {
         "command": "erp-helper.web-services",
         "title": "Web Services",
@@ -103,7 +135,7 @@
           "default": null,
           "description": "Most recent Workday API Version under Web Services.",
           "order": 3
-        },        
+        },
         "erp-helper.connectionSelected": {
           "type": [
             "string",
@@ -176,6 +208,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.33",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "axios": "^1.4.0",
     "cheerio": "^1.0.0-rc.12",

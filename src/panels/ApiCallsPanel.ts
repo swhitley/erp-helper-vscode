@@ -17,6 +17,7 @@ export class ApiCallsPanel {
   private _secrets: vscode.SecretStorage | undefined;   
   private static _xml: string = "";
   private static _tabLabel: string = "";
+  private _statusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, secrets: vscode.SecretStorage) {
     this._panel = panel;
@@ -138,6 +139,8 @@ export class ApiCallsPanel {
 
   private async _formLoadWebServices() {
     try {
+      this._statusBarItem.text = `$(loading~spin) Loading`;
+		  this._statusBarItem.show();
       const setting = await vscode.workspace.getConfiguration().get('erp-helper.webServiceSelected');
       const webSvcResponse = await axios.get(this._wwsUrl);
       const html = webSvcResponse.data;
@@ -168,6 +171,9 @@ export class ApiCallsPanel {
         vscode.window.showErrorMessage("Unexpected Error: " + ex);
         return;
     }
+    finally {
+		  this._statusBarItem.hide();
+    }
   }
 
   private async _btnCallApiOnClick(api: any) {
@@ -184,12 +190,12 @@ export class ApiCallsPanel {
 
   private async soapCall(api: any) {
     try {
+      this._statusBarItem.text = `$(loading~spin) Processing`;
+		  this._statusBarItem.show();
+      const xmlUtil = new XmlUtil();
       // Remove an existing XML declaration.
       var xml = ApiCallsPanel._xml; 
-      const declIndex = xml.indexOf("?>");
-      if (declIndex > 0) {
-        xml = xml.substring(declIndex + 2);
-      }
+      xml = xmlUtil.declarationRemove(xml);
       // Extract the request from an existing SOAP body.     
       let xmlLC = xml.toLowerCase();
       let bodyEnd = xmlLC.lastIndexOf(":body");
@@ -202,7 +208,7 @@ export class ApiCallsPanel {
         xml = xml.substring(++bodyStart);
       } 
       // Wrap the request in a SOAP envelope.
-      xml = XmlUtil.soapHeader + xml + XmlUtil.soapFooter;
+      xml = XmlUtil.soapStart + xml + XmlUtil.soapEnd;
       xml = xml.replace("{username}", api.username + "@" + api.tenant);
       xml = xml.replace("{password}", api.password);
       if (api) {
@@ -223,7 +229,6 @@ export class ApiCallsPanel {
         }    
         ).then(async (response) => {
           const xml = response.data;
-          const xmlUtil = new XmlUtil();
           var result = await xmlUtil.transform(xml, XmlUtil.xsltTidy); 
           var option = {content: result, language: "xml"};
           await vscode.workspace.openTextDocument(option)
@@ -242,6 +247,9 @@ export class ApiCallsPanel {
     catch(ex) {
       vscode.window.showErrorMessage("Unexpected Error: " + ex);
       return;
+    }
+    finally {
+		  this._statusBarItem.hide();
     }
   }
 
@@ -268,6 +276,8 @@ export class ApiCallsPanel {
 
   private async _drpConnectionOnChange(text : string) {
     try {
+      this._statusBarItem.text = `$(loading~spin) Processing`;
+		  this._statusBarItem.show();
       await vscode.workspace.getConfiguration().update('erp-helper.connectionSelected', text, true);
         const conns = await vscode.workspace.getConfiguration().get('erp-helper.connectionList') as Array<typeof this._connection>;
         const conn = conns.filter(item => item.name === text);
@@ -293,6 +303,9 @@ export class ApiCallsPanel {
       vscode.window.showErrorMessage("Unexpected Error: " + ex);
       return;
     }
+    finally {
+		  this._statusBarItem.hide();
+    }
   }
 
   private async _drpWebServiceOnChange(text : string) {
@@ -317,6 +330,7 @@ export class ApiCallsPanel {
   private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
     const webviewUri = getUri(webview, extensionUri, ["out", "apicalls.js"]);
     const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
+    const codiconsUri = getUri(webview, extensionUri, ["out", "codicon.css"]);
 	
     const nonce = getNonce();
     return `
@@ -325,8 +339,9 @@ export class ApiCallsPanel {
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
           <link rel="stylesheet" href="${styleUri}">
+          <link href="${codiconsUri}" rel="stylesheet" />
           <title>ERP Helper</title>
         </head>
         <body>
@@ -334,12 +349,12 @@ export class ApiCallsPanel {
           <div>
           <ol>
             <li>Configure a tenant connection on ERP Helper's <vscode-link id="lnkConnections">Connections</vscode-link> page.</li>
-            <li>Create an XML request document. (Two helper resources are available below.)</li>
+            <li>Create an XML request document (two helper resources are available below).</li>
               <ul>
                 <li>ERP Helper's <vscode-link id="lnkWebServices">Web Services</vscode-link> page.</li>
                 <li><vscode-link id="lnkGetWorkers">Get Workers</vscode-link> example.</li>
               </ul>            
-            <li>In the request document, right-click and select <i>ERP Helper</i> > <i>API Calls.</i></li>
+            <li>In the request document, right-click/control-click and select <i>ERP Helper</i> > <i>API Calls.</i></li>
           </ol>
           </div>
           <br/>
@@ -352,31 +367,39 @@ export class ApiCallsPanel {
             <label for="drpConnection">Connection</label><br/>
             <vscode-dropdown id="drpConnection" />
           </div>
-          <br/>
-          <div class="container">
-          <div class="left">
-          <div class="textfield-container">
-            <label for="txtTenant"><u>Tenant</u></label><br/>
-            <span id="spnTenant"></span>
-          </div>
-          </div>
-          <div class="right">
-          <div class="textfield-container">
-            <label for="txtUsername"><u>Username</u></label><br/>
-            <span id="spnUsername"></span>
-          </div>
-          </div>
-          </div>
-          <vscode-link id="lnkUrl" href=""></vscode-link>
-          <br/>
+          <vscode-button id="btnHide" appearance="icon">
+            <span class="codicon codicon-chevron-up"></span>
+          </vscode-button>
+          <vscode-button id="btnShow" appearance="icon" hidden>
+            <span class="codicon codicon-chevron-down"></span>
+          </vscode-button>
           <vscode-divider></vscode-divider>
+          <div id="connDetails">
+            <div class="container">
+              <div class="left">
+                <div class="textfield-container">
+                  <label for="txtTenant"><u>Tenant</u></label><br/>
+                  <span id="spnTenant"></span>
+                </div>
+              </div>
+              <div class="right">
+                <div class="textfield-container">
+                  <label for="txtUsername"><u>Username</u></label><br/>
+                  <span id="spnUsername"></span>
+                </div>
+              </div>
+            </div>
+            <vscode-link id="lnkUrl" href=""></vscode-link>
+            <br/>
+            <vscode-divider></vscode-divider>
+          </div>
           <br/>
           <div class="dropdown-container">
             <label for="drpWebService">Service</label><br/>
             <vscode-dropdown id="drpWebService"/>
           </div>
           <br/>
-          <vscode-text-field placeholder="v39.1" type="text" id="txtVersion" name="txtVersion" value="v39.1">Version</vscode-text-field>
+          <vscode-text-field placeholder="v40.2" type="text" id="txtVersion" name="txtVersion" value="v40.2">Version</vscode-text-field>
           <br/>
           <input type="hidden" id="txtTenant"/>
           <input type="hidden" id="txtUrl"/>

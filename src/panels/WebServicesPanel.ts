@@ -10,7 +10,8 @@ export class WebServicesPanel {
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private readonly _wwsUri= "https://community.workday.com/sites/default/files/file-hosting/productionapi/";
-  private readonly _wwsUrl = this._wwsUri + "index.html";     
+  private readonly _wwsUrl = this._wwsUri + "index.html";   
+  private _statusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);  
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
     this._panel = panel;
@@ -83,6 +84,8 @@ export class WebServicesPanel {
 
   private async _formLoad() {
     try {
+      this._statusBarItem.text = `$(loading~spin) Loading`;
+		  this._statusBarItem.show();
       const setting = await vscode.workspace.getConfiguration().get('erp-helper.webServiceSelected');
       const webSvcResponse = await axios.get(this._wwsUrl);
       const html = webSvcResponse.data;
@@ -113,10 +116,15 @@ export class WebServicesPanel {
         vscode.window.showErrorMessage("Unexpected Error: " + ex);
         return;
     }
+    finally {
+      this._statusBarItem.hide();
+    }
   }
 
   private async _btnGenRequestOnClick(text : string) {
     try {
+      this._statusBarItem.text = `$(loading~spin) Processing`;
+		  this._statusBarItem.show();
       const svc = text.split("|")[0];
       const ver = text.split("|")[1];
       const op = text.split("|")[2];
@@ -136,11 +144,16 @@ export class WebServicesPanel {
       vscode.window.showErrorMessage("Unexpected Error: " + ex);
       return;
     }
+    finally {
+		  this._statusBarItem.hide();
+    }
     return;
   }
 
   private async _drpWebServiceOnChange(text : string) {
     try {
+      this._statusBarItem.text = `$(loading~spin) Loading`;
+		  this._statusBarItem.show();
       await vscode.workspace.getConfiguration().update('erp-helper.webServiceSelected', text, true);
       const setting = await vscode.workspace.getConfiguration().get('erp-helper.webOperationSelected');
       const webOpResponse = await axios.get(text);
@@ -163,6 +176,9 @@ export class WebServicesPanel {
     catch(ex) {
       vscode.window.showErrorMessage("Unexpected Error: " + ex);
       return;
+    }
+    finally{
+		  this._statusBarItem.hide();
     }
   }
 
@@ -193,7 +209,7 @@ export class WebServicesPanel {
             <vscode-dropdown id="drpWebOperation"/>
           </div>
           <br/>
-          <vscode-text-field placeholder="v39.1" type="text" id="txtVersion" name="txtVersion" value="v39.1">Version</vscode-text-field>
+          <vscode-text-field placeholder="v40.2" type="text" id="txtVersion" name="txtVersion" value="v40.2">Version</vscode-text-field>
           <br/><br/>
           <vscode-button id="btnGenRequest">Generate Request</vscode-button>
           <br/><br/>

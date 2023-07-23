@@ -80,6 +80,12 @@ function main() {
   const txtVersion = document.getElementById("txtVersion") as TextField;
   txtVersion?.addEventListener("change", txtVersionOnChange);
 
+  const btnShow = document.getElementById("btnShow") as Button;
+  btnShow?.addEventListener("click", btnShowOnClick);
+
+  const btnHide = document.getElementById("btnHide") as Button;
+  btnHide?.addEventListener("click", btnHideOnClick);
+
 }
 
 function drpConnectionOnChange(this: any) {
@@ -118,6 +124,22 @@ function btnCallApiOnClick() {
     command: "btnCallApiOnClick",
     data: api
   });
+}
+
+function btnShowOnClick(this: any) {  
+  const divConnDetails = document.getElementById("connDetails") as HTMLDivElement;
+  const btnHide = document.getElementById("btnHide") as Button;
+  divConnDetails.hidden = false;
+  this.hidden = true;
+  btnHide.hidden = false;
+}
+
+function btnHideOnClick(this: any) {  
+  const divConnDetails = document.getElementById("connDetails") as HTMLDivElement;
+  const btnShow = document.getElementById("btnShow") as Button;
+  divConnDetails.hidden = true;
+  this.hidden = true;
+  btnShow.hidden = false;
 }
 
 function btnRefreshOnClick() {  

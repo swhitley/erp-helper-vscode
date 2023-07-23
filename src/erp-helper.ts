@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'; 
 import { XmlUtil } from "./utilities/xmlutil";  
+let _statusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100); 
     
 export async function transform() {       
     let xml = "";
@@ -18,6 +19,8 @@ export async function transform() {
     }
     
     try {
+        _statusBarItem.text = `$(loading~spin) Processing`;
+	    _statusBarItem.show();
         const text = activeEditor.document.getText();
         let index = activeTabGroup.tabs.indexOf(activeTabGroup.activeTab);
         if (text.toLowerCase().indexOf("<xsl:stylesheet") >= 0) {
@@ -76,4 +79,78 @@ export async function transform() {
         vscode.window.showErrorMessage("Unexpected Error: " + ex);
         return;
     }
+    finally {
+        _statusBarItem.hide();
+    }
+}
+
+export async function soapWrapper() {
+
+    let xml = "";
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        return;
+    }
+    try {
+        _statusBarItem.text = `$(loading~spin) Processing`;
+	    _statusBarItem.show();
+        const text = activeEditor.document.getText();
+        if (text.toLowerCase().indexOf("<xsd:envelope") >= 0) { 
+            vscode.window.showErrorMessage("This is already a SOAP document.");
+        }
+        else {
+            const xmlUtil = new XmlUtil();
+            xml = XmlUtil.soapStart + xmlUtil.declarationRemove(text) + XmlUtil.soapEnd;
+            const doc = activeEditor.document;
+            activeEditor.edit(builder => {
+                builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), xml);
+            });
+        }
+    }
+    catch (ex) {
+        vscode.window.showErrorMessage("Unexpected Error: " + ex);
+        return;
+    }
+    finally {
+        _statusBarItem.hide();
+    }    
+
+}
+
+export async function xsltWrapper() {
+
+    let xml = "";
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        return;
+    }
+    try {
+        _statusBarItem.text = `$(loading~spin) Processing`;
+	    _statusBarItem.show();
+        const text = activeEditor.document.getText();
+        if (text.toLowerCase().indexOf("<xsl:stylesheet") >= 0) { 
+            vscode.window.showErrorMessage("This is already an XSLT document.");
+        }
+        else {
+            if (text.toLowerCase().indexOf("<xsd:envelope") >= 0) { 
+                vscode.window.showErrorMessage("This is already a SOAP document.");
+            }
+            else {
+                const xmlUtil = new XmlUtil();
+                xml = XmlUtil.styleSheetStart + xmlUtil.declarationRemove(text) + XmlUtil.styleSheetEnd;
+                const doc = activeEditor.document;
+                activeEditor.edit(builder => {
+                    builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), xml);
+                });
+            }
+        }
+    }
+    catch (ex) {
+        vscode.window.showErrorMessage("Unexpected Error: " + ex);
+        return;
+    }
+    finally {
+        _statusBarItem.hide();
+    }    
+
 }

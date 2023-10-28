@@ -100,7 +100,7 @@ export async function soapWrapper() {
         }
         else {
             const xmlUtil = new XmlUtil();
-            xml = XmlUtil.soapStart + xmlUtil.declarationRemove(text) + XmlUtil.soapEnd;
+            xml = XmlUtil.soapStart.replace("{security}", XmlUtil.soapSecurity) + xmlUtil.declarationRemove(text) + XmlUtil.soapEnd;
             const doc = activeEditor.document;
             activeEditor.edit(builder => {
                 builder.replace(new vscode.Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), xml);

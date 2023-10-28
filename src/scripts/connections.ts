@@ -1,9 +1,14 @@
 import { provideVSCodeDesignSystem, 
   vsCodeButton, Button, vsCodeDropdown, vsCodeOption, Option, 
-  Dropdown, vsCodeTextField, TextField, DropdownOptions, vsCodeLink, RadioGroup, Radio, vsCodeRadio, vsCodeRadioGroup, Link} from "@vscode/webview-ui-toolkit";
+  Dropdown, vsCodeTextField, TextField, DropdownOptions, vsCodeLink, 
+  RadioGroup, Radio, vsCodeRadio, vsCodeRadioGroup, Link,
+  vsCodePanels, vsCodePanelTab, vsCodePanelView, Panels, PanelTab
+
+} from "@vscode/webview-ui-toolkit";
 
 provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeDropdown(), 
-  vsCodeOption(), vsCodeTextField(), vsCodeLink(), vsCodeRadioGroup(), vsCodeRadio());
+  vsCodeOption(), vsCodeTextField(), vsCodeLink(), vsCodeRadioGroup(), 
+  vsCodeRadio(), vsCodePanels(), vsCodePanelTab(), vsCodePanelView());
 
 const vscode = acquireVsCodeApi();
 
@@ -11,19 +16,25 @@ window.addEventListener("load", main);
 
 window.addEventListener('message', event => {
   const message = event.data;
+  let $ = getElements();
   switch (message.command) {
     case 'formLoad':
       formLoad(message.message);
       break;
       case "btnTestOnClick":
-        let $ = getElements();
         urlSet(message.message);
         if ($.txtUrl.value.length > 0) {
           const btnSave = document.getElementById("btnSave") as Button;
           btnSave.disabled = false;
         }
         break;
+        case "btnAccessTokenGetOnClick":
+          $.txtAccessToken.value = message.message;
+        break;        
       case 'btnSaveOnClick':
+        if ($.txtName.value.length > 0) {
+          $.txtName.disabled = true;
+        }
         // n/a
         break;
       case 'rdgConnectionOnChange':
@@ -45,6 +56,9 @@ function main() {
   const btnTest = document.getElementById("btnTest") as Button;
   btnTest?.addEventListener("click", btnTestOnClick);
 
+  const btnAccessTokenGet = document.getElementById("btnAccessTokenGet") as Button;
+  btnAccessTokenGet?.addEventListener("click", btnAccessTokenGetOnClick);
+  
   const btnSave = document.getElementById("btnSave") as Button;
   btnSave?.addEventListener("click", btnSaveOnClick); 
 
@@ -53,6 +67,9 @@ function main() {
 
   const rdgConnection = document.getElementById("rdgConnection") as RadioGroup;
   rdgConnection?.addEventListener("change", rdgConnectionOnChange); 
+
+  const drpEnv = document.getElementById("drpEnv") as Dropdown;
+  drpEnv?.addEventListener("change", drpEnvOnChange);
 
   const txtTenant = document.getElementById("txtTenant") as TextField;
   txtTenant?.addEventListener("change", txtTenantOnChange); 
@@ -93,7 +110,9 @@ function formLoad(text : string) {
   });
   if (selectedValue.length > 0) {
     $.rdgConnection.value = selectedValue;
-    $.txtName.disabled = true;
+    if ($.txtName.value.length > 0) {
+      $.txtName.disabled = true;
+    }
   }
   vscode.postMessage({
     command: "rdgConnectionOnChange",
@@ -115,6 +134,10 @@ function rdgConnectionOnChange(this: RadioGroup) {
   });  
 }
 
+function drpEnvOnChange(this: Dropdown) {
+  urlSet("");
+}
+
 function txtTenantOnChange() {
   urlSet("");
 }
@@ -130,15 +153,43 @@ function txtPasswordOnChange() {
 function btnTestOnClick() {
   let $ = getElements();
   urlSet("");
+  let env = $.drpEnv.value;
+  if (env.indexOf("|") ) {
+    env = env.split("|")[0];
+  }
   const test = {
     "name" : $.txtName.value,
-    "env" : $.drpEnv.value,
+    "env" : env,
     "tenant" : $.txtTenant.value,
     "username" : $.txtUsername.value,
-    "password" : $.txtPassword.value
+    "password" : $.txtPassword.value,
+    "accessToken": $.txtAccessToken.value
   };
   vscode.postMessage({
     command: "btnTestOnClick",
+    data: test,
+  });
+}
+
+function btnAccessTokenGetOnClick() {
+  let $ = getElements();
+  let env = $.drpEnv.value;
+  if (env.indexOf("|") ) {
+    env = env.split("|")[0];
+  }
+  const test = {
+    "name" : $.txtName.value,
+    "env" : env,
+    "tenant" : $.txtTenant.value,
+    "username" : $.txtUsername.value,
+    "password" : $.txtPassword.value,
+    "clientId" : $.txtClientId.value,
+    "authEndpoint": $.txtAuthEndpoint.value,
+    "tokenEndpoint": $.txtTokenEndpoint.value,
+    "accessToken": $.txtAccessToken.value
+  };
+  vscode.postMessage({
+    command: "btnAccessTokenGetOnClick",
     data: test,
   });
 }
@@ -151,13 +202,17 @@ function btnSaveOnClick() {
     "url" : $.txtUrl.value,
     "tenant" : $.txtTenant.value,
     "username" : $.txtUsername.value,
-    "password" : $.txtPassword.value
+    "password" : $.txtPassword.value,
+    "clientId": $.txtClientId.value,
+    "authEndpoint": $.txtAuthEndpoint.value,
+    "tokenEndpoint": $.txtTokenEndpoint.value,
+    "accessToken": $.txtAccessToken.value
   };
   vscode.postMessage({
     command: "btnSaveOnClick",
     data: save,
   });
-  $.txtName.disabled = true;
+  
   const btnSave = document.getElementById("btnSave") as Button;
   btnSave.disabled = true;
 }
@@ -187,6 +242,11 @@ function btnNewOnClick() {
   $.txtTenant.value = '';
   $.txtUsername.value = '';
   $.txtPassword.value = '';
+  $.txtClientId.value = '';
+  $.txtAuthEndpoint.value = '';
+  $.txtTokenEndpoint.value = '';
+  $.txtAccessToken.value = '';
+  
   const btnSave = document.getElementById("btnSave") as Button;
   btnSave.disabled = true;
  
@@ -196,12 +256,22 @@ function connectionLoad(data: any) {
   if (data) {
     let $ = getElements();
     $.txtName.value = data.name;
-    $.txtName.disabled = true;
+    if ($.txtName.value.length > 0) {
+      $.txtName.disabled = true;
+    }
     $.drpEnv.value = data.env;
     urlSet(data.url);
     $.txtTenant.value = data.tenant;
     $.txtUsername.value = data.username;
     $.txtPassword.value = data.password;
+    $.txtClientId.value = data.clientId;
+    $.txtAuthEndpoint.value = data.authEndpoint;
+    $.txtTokenEndpoint.value = data.tokenEndpoint;
+    $.txtAccessToken.value = data.accessToken;
+    if ($.txtAccessToken.value.length > 0) {
+      const authPanels = document.getElementById("authPanels") as Panels;
+      authPanels.activeid = "tabOAuth";
+    }
     
   }
   const btnSave = document.getElementById("btnSave") as Button;
@@ -215,10 +285,15 @@ function getElements() {
   const txtTenant = document.getElementById("txtTenant") as TextField;
   const txtUsername = document.getElementById("txtUsername") as TextField;
   const txtPassword = document.getElementById("txtPassword") as TextField;
+  const txtClientId = document.getElementById("txtClientId") as TextField;
+  const txtAuthEndpoint = document.getElementById("txtAuthEndpoint") as TextField;
+  const txtTokenEndpoint = document.getElementById("txtTokenEndpoint") as TextField;
+  const txtAccessToken = document.getElementById("txtAccessToken") as TextField;
   const txtUrl = document.getElementById("txtUrl") as TextField;
   const lnkUrl = document.getElementById("lnkUrl") as Link;
 
-  return {rdgConnection, txtName, drpEnv, txtTenant, txtUrl, lnkUrl, txtUsername, txtPassword};
+  return {rdgConnection, txtName, drpEnv, txtTenant, txtUrl, lnkUrl, txtUsername, txtPassword, 
+    txtClientId, txtAuthEndpoint, txtTokenEndpoint, txtAccessToken};
 }
 
 function urlSet(value: string) {

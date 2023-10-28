@@ -13,11 +13,11 @@ export class XmlUtil {
     <xsl:output method="xml" indent="yes"/>
     <xsl:template match="/">
       <env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
-        <Body>
+        <env:Body>
           <xsl:for-each select="wd:Report_Data/wd:Report_Entry">`;
   
   public static styleSheetEnd = `        </xsl:for-each>
-      </Body>
+      </env:Body>
     </env:Envelope>
   </xsl:template>
 </xsl:stylesheet>`;
@@ -31,16 +31,16 @@ export class XmlUtil {
   </wd:Request_References>
 </wd:Get_Workers_Request>`;
 
-  public static soapStart = `<?xml version="1.0" encoding="UTF-8"?>
+public static soapSecurity = ` <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+<wsse:UsernameToken>
+  <wsse:Username>{username}</wsse:Username>
+  <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">{password}</wsse:Password>
+</wsse:UsernameToken>
+</wsse:Security>`;
+
+public static soapStart = `<?xml version="1.0" encoding="UTF-8"?>
 <xsd:Envelope xmlns:xsd="http://schemas.xmlsoap.org/soap/envelope/">
-  <xsd:Header>
-    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-      <wsse:UsernameToken>
-        <wsse:Username>{username}</wsse:Username>
-        <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">{password}</wsse:Password>
-      </wsse:UsernameToken>
-    </wsse:Security>
-  </xsd:Header>
+  <xsd:Header>{security}</xsd:Header>
   <env:Body xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">`;
 
   public static soapEnd = `</env:Body>

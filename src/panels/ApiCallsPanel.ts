@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { getUri } from "../utilities/getUri";
 import { getNonce } from "../utilities/getNonce";
 import { XmlUtil } from "../utilities/xmlutil";
+import { Connection, ConnectionUtils } from "../utilities/connection";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -10,45 +11,70 @@ import * as cheerio from "cheerio";
 export class ApiCallsPanel {
   public static currentPanel: ApiCallsPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
+  private readonly _context: vscode.ExtensionContext;
   private _disposables: vscode.Disposable[] = [];
   private readonly _wwsUri= "https://community.workday.com/sites/default/files/file-hosting/productionapi/";
   private readonly _wwsUrl = this._wwsUri + "index.html";  
-  private readonly _connection = { name: "", url: "", tenant: "", username: "", password: "" };
+  private readonly _connection: Connection;
   private _secrets: vscode.SecretStorage | undefined;   
   private static _xml: string = "";
   private static _tabLabel: string = "";
   private _statusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, secrets: vscode.SecretStorage) {
+  private constructor(panel: vscode.WebviewPanel, context: vscode.ExtensionContext) {
     this._panel = panel;
+    this._context = context;
+    this._connection = new Connection();
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-    this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
+    this._panel.webview.html = this._getWebviewContent(this._panel.webview, context.extensionUri);
     this._setWebviewMessageListener(this._panel.webview);
-    this._secrets = secrets;
+    this._secrets = context.secrets;
     vscode.window.onDidChangeActiveTextEditor(this._onDidChangeActiveTextEditor, this, this._disposables);
   }
 
-  public static render(extensionUri: vscode.Uri, secrets: vscode.SecretStorage) {
-    // Save the text from the active editor.
-    if (vscode.window.activeTextEditor) {
-      this._xml = vscode.window.activeTextEditor.document.getText();
-    }
-    // Save the label from the active editor.
+  public static render(context: vscode.ExtensionContext) {
+    let activeLabel = "";
     if (vscode.window.tabGroups.activeTabGroup.activeTab) {
-      this._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label;
+      activeLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label;
     }
     if (ApiCallsPanel.currentPanel) {
       ApiCallsPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
+      if (activeLabel !== ApiCallsPanel._tabLabel) {
+        vscode.window.showInformationMessage("Change Current Document on API Calls page?", "Yes", "No")
+        .then(answer => {
+          if (answer === "Yes") {  
+            ApiCallsPanel._tabLabel = activeLabel;            
+            ApiCallsPanel.currentPanel?._panel.webview.postMessage({ command: 'documentChanged', document: ApiCallsPanel._tabLabel });
+            // Save the text from the active editor.
+            if (vscode.window.activeTextEditor) {
+              this._xml = vscode.window.activeTextEditor.document.getText();
+            }
+          }
+        });
+      } 
+      else {
+        // Save the text from the active editor.
+        if (vscode.window.activeTextEditor) {
+          this._xml = vscode.window.activeTextEditor.document.getText();
+        }
+      }     
     } else {
+      // Save the text from the active editor.
+      if (vscode.window.activeTextEditor) {
+        this._xml = vscode.window.activeTextEditor.document.getText();
+      }
+      // Save the label from the active editor.
+      if (vscode.window.tabGroups.activeTabGroup.activeTab) {
+        this._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label;
+      }
       const panel = vscode.window.createWebviewPanel("erp-helper", "API Calls (ERP Helper)", vscode.ViewColumn.One, {
         enableScripts: true,
         retainContextWhenHidden: true,
         enableCommandUris: true,
-        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
+        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'out')]
       });
-
-      ApiCallsPanel.currentPanel = new ApiCallsPanel(panel, extensionUri, secrets);
-    }
+      ApiCallsPanel.currentPanel = new ApiCallsPanel(panel, context);
+    } 
   }
 
   public dispose() {
@@ -67,8 +93,7 @@ export class ApiCallsPanel {
   private _onDidChangeActiveTextEditor() {
     if (vscode.window.activeTextEditor) {
       if (vscode.window.tabGroups.activeTabGroup.activeTab) {
-        ApiCallsPanel._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label;
-        this._panel.webview.postMessage({ command: 'documentChanged', document: ApiCallsPanel._tabLabel });
+        //ApiCallsPanel._tabLabel = vscode.window.tabGroups.activeTabGroup.activeTab.label; 
       }
     }
   }
@@ -120,8 +145,8 @@ export class ApiCallsPanel {
   }
 
   private async _formLoad() {
-    const connections = await vscode.workspace.getConfiguration().get('erp-helper.connectionList') as Array<typeof this._connection>;
-    const connectionSelected = await vscode.workspace.getConfiguration().get('erp-helper.connectionSelected');
+    const connections = await ConnectionUtils.connectionList();
+    const connectionSelected = await ConnectionUtils.connectionSelected();
     
     const names =  connections.map(connection => { 
       let selected = "N";
@@ -190,6 +215,7 @@ export class ApiCallsPanel {
 
   private async soapCall(api: any) {
     try {
+      const conn = await ConnectionUtils.currentConnection(this._context);
       this._statusBarItem.text = `$(loading~spin) Processing`;
 		  this._statusBarItem.show();
       const xmlUtil = new XmlUtil();
@@ -209,24 +235,44 @@ export class ApiCallsPanel {
       } 
       // Wrap the request in a SOAP envelope.
       xml = XmlUtil.soapStart + xml + XmlUtil.soapEnd;
-      xml = xml.replace("{username}", api.username + "@" + api.tenant);
-      xml = xml.replace("{password}", api.password);
       if (api) {
         let url = api.url + api.service + "/" + api.version;
-        const headers = {
-          'user-agent': 'erp-helper',
-          'Content-Type': 'text/xml',
-        };
+        let headers = {};
+        let config = {};
+        if (!conn.accessToken) {
+          let xmlSecurity = XmlUtil.soapSecurity;          
+          xmlSecurity = xmlSecurity.replace("{username}", api.username + "@" + api.tenant);
+          xmlSecurity = xmlSecurity.replace("{password}", api.password);
+          xml = xml.replace("{security}", xmlSecurity);
+          headers = {
+            'user-agent': 'erp-helper',
+            'Content-Type': 'text/xml',
+          };
+          config =  {
+            auth: {
+              username: api.username + "@" + api.tenant,
+              password: api.password
+            },
+            headers
+          };
+        } else {
+          xml = xml.replace("{security}", '');
+          headers = {
+            'user-agent': 'erp-helper',
+            'Content-Type': 'text/xml', 
+            'X-Originator': 'erp-helper',
+            'X-Tenant': conn.tenant,           
+            'Authorization': 'Bearer ' + conn.accessToken 
+          };
+          config = {
+            headers
+          };
+        }
+        
         axios.post(
           url,
           xml,
-          {
-            auth: {
-            username: api.username + "@" + api.tenant,
-            password: api.password
-          },
-          headers
-        }    
+          config,
         ).then(async (response) => {
           const xml = response.data;
           var result = await xmlUtil.transform(xml, XmlUtil.xsltTidy); 
@@ -257,9 +303,11 @@ export class ApiCallsPanel {
     const activeTabGroup = vscode.window.tabGroups.activeTabGroup;
     const label = activeTabGroup.activeTab?.label;
     if (activeTabGroup) {
+      let found = false;
       activeTabGroup.tabs.forEach( async item => {
         var tab = item as vscode.Tab;
         if (tab.label === ApiCallsPanel._tabLabel) {
+            found = true;
             const input  = (tab.input as vscode.TabInputText);
             await vscode.window.showTextDocument(input.uri, { preserveFocus: true, preview: false })
               .then(editor => {
@@ -271,6 +319,12 @@ export class ApiCallsPanel {
             }
         }
       });
+      if (!found) {
+        throw new Error("Current Document not found.");
+      }
+    }
+    else {
+      throw new Error("No active tab groups.");
     }
   }
 
@@ -278,26 +332,20 @@ export class ApiCallsPanel {
     try {
       this._statusBarItem.text = `$(loading~spin) Processing`;
 		  this._statusBarItem.show();
-      await vscode.workspace.getConfiguration().update('erp-helper.connectionSelected', text, true);
-        const conns = await vscode.workspace.getConfiguration().get('erp-helper.connectionList') as Array<typeof this._connection>;
-        const conn = conns.filter(item => item.name === text);
-        if (conn.length === 0) {
-          throw new Error("No connections found for " + text);
-        }
-        if (conn.length === 1) {
-          if (this._secrets) {
-            await this._secrets.get("erp-helper-" + text).then(password => {
-              if (password) {
-                conn[0].password = password;
-                this._panel.webview.postMessage({ command: 'drpConnectionOnChange', message: conn[0] });
-              }
-            });            
-          }                  
-        }
-        else {
-          throw new Error("More than one connection found for " + text);
-        }
-        return;
+      const conns = await ConnectionUtils.connectionList();
+      const conn = conns.filter(item => item.name === text);
+      if (conn.length === 0) {
+        throw new Error("No connections found for " + text);
+      }
+      if (conn.length === 1) {
+          conn[0].password = await ConnectionUtils.passwordGet(this._context, text);
+          conn[0].accessToken = await ConnectionUtils.accessTokenGet(this._context, text);
+          this._panel.webview.postMessage({ command: 'drpConnectionOnChange', message: conn[0] });              
+      }
+      else {
+        throw new Error("More than one connection found for " + text);
+      }
+      return;
     }
     catch(ex) {
       vscode.window.showErrorMessage("Unexpected Error: " + ex);

@@ -3,6 +3,7 @@ import * as erpHelper from "./erp-helper";
 import { WebServicesPanel} from "./panels/WebServicesPanel";
 import { ConnectionsPanel } from "./panels/ConnectionsPanel";
 import { ApiCallsPanel } from "./panels/ApiCallsPanel";
+import { OAuthProvider } from './providers/oAuthProvider';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -24,11 +25,11 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const apiCallsCommand = vscode.commands.registerCommand("erp-helper.api-calls", () => {
-	ApiCallsPanel.render(context.extensionUri, context.secrets);
+	ApiCallsPanel.render(context);
 	});	  
 
 	const connectionsCommand = vscode.commands.registerCommand("erp-helper.connections", () => {
-	ConnectionsPanel.render(context.extensionUri, context.secrets);
+	ConnectionsPanel.render(context);
 	});
 	  
 	context.subscriptions.push(webServicesCommand);
@@ -37,7 +38,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(transformDisposable);
 	context.subscriptions.push(xsltWrapperDisposable);
 	context.subscriptions.push(soapWrapperDisposable);
+
+	context.subscriptions.push(new OAuthProvider(context));
+
 	
 }
+
 
 export function deactivate() {}

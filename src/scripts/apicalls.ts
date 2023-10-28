@@ -236,6 +236,9 @@ function connectionLoad(data: any) {
     $.txtPassword.value = data.password;
     $.spnTenant.textContent = data.tenant;
     $.spnUsername.textContent = data.username;
+    if (data.username.length === 0) {
+      $.spnUsername.textContent = "OAuth";
+    }
   }
 }
 

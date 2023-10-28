@@ -33,9 +33,7 @@ ERP Helper supports OAuth 2.0 and Basic Authentication. Authentication is requir
 
 For OAuth, you must use the Register API Client task in your Workday tenant.  See the example below for OAuth settings.  The Redirection URI is `vscode://WhitleyMedia.erp-helper`.
 
-![image](https://github.com/swhitley/erp-helper-vscode/assets/413552/2cda626c-f29a-4ea7-89d3-0b34ebda3296)
-
-
+![image](https://github.com/swhitley/erp-helper-vscode/assets/413552/572d237c-8493-4f0d-8f8d-2d4030062c66)
 
 ## Extension Settings
 

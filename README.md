@@ -28,6 +28,12 @@ To perform the most common function (XML transformation with XSLT) follow these 
 
 ![Transform (XSLT)](images/erp-helper-screenshot-1.png)
 
+## Authentication
+ERP Helper supports OAuth 2.0 and Basic Authentication. Authentication is required when using the API Calls page.
+
+For OAuth, you must use the Register API Client task in your Workday tenant.  See the example below for OAuth settings.  The Redirection URI is `vscode://WhitleyMedia.erp-helper`.
+
+<img width="380" alt="image" src="https://github.com/swhitley/erp-helper-vscode/assets/413552/acbf9383-318e-4d86-aec4-c59195d3ef9e">
 
 ## Extension Settings
 

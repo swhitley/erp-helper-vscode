@@ -4,6 +4,8 @@ import { WebServicesPanel} from "./panels/WebServicesPanel";
 import { ConnectionsPanel } from "./panels/ConnectionsPanel";
 import { ApiCallsPanel } from "./panels/ApiCallsPanel";
 import { OAuthProvider } from './providers/oAuthProvider';
+import { NotebookKernel } from './notebookKernel';
+import { NotebookSerializer } from './notebookSerializer';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -40,6 +42,20 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(soapWrapperDisposable);
 
 	context.subscriptions.push(new OAuthProvider(context));
+
+	// Notebook
+	// Regular kernel
+	context.subscriptions.push(new NotebookKernel(false, context));
+	// Kernel for interactive window
+	context.subscriptions.push(new NotebookKernel(true, context));
+
+	context.subscriptions.push(vscode.workspace.registerNotebookSerializer('wql-book', new NotebookSerializer(), {
+		transientOutputs: false,
+		transientCellMetadata: {
+			inputCollapsed: true,
+			outputCollapsed: true,
+		}
+	}));
 
 	
 }

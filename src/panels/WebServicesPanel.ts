@@ -28,7 +28,7 @@ export class WebServicesPanel {
         enableScripts: true,
         retainContextWhenHidden: true,
         enableCommandUris: true,
-        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist')]
       });
 
       WebServicesPanel.currentPanel = new WebServicesPanel(panel, extensionUri);
@@ -95,6 +95,7 @@ export class WebServicesPanel {
       // Loop through the selected elements
       let message = "";
       links.each((index, value) => {
+        const i = index;
         const href = $(value).attr("href");              
         if (href) {
           if ( href.indexOf(".xsd") > 0) {
@@ -162,6 +163,7 @@ export class WebServicesPanel {
       const nodes = $X("xsd\\:schema > xsd\\:element");
       let webOpMessage = "";
       nodes.each((index, node) => {
+        const i = index;
         const name = $X(node).attr("name");
         let selected = "N";
         if (setting === name) {
@@ -183,8 +185,8 @@ export class WebServicesPanel {
   }
 
   private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
-    const webviewUri = getUri(webview, extensionUri, ["out", "webservices.js"]);
-    const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
+    const webviewUri = getUri(webview, extensionUri, ["dist", "webservices.js"]);
+    const styleUri = getUri(webview, extensionUri, ["dist", "style.css"]);
 	
     const nonce = getNonce();
     return `

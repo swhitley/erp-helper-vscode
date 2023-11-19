@@ -1,0 +1,71 @@
+{
+    "scopeName": "source.wql-book",
+    "patterns":[
+        {
+            "include": "#constant"
+        },
+        {
+            "include": "#keyword"
+        },
+        {
+            "include": "#variable"
+        },
+        {
+            "include": "#headerkey"
+        },
+        {
+            "include": "#json"
+        },
+        {
+            "include": "#xml"
+        }
+    ],
+    "repository": {
+        "constant": {
+            "name": "support.function",
+            "match": "(?i)\\b(SELECT|FROM|WHERE|LIMIT|JOIN|UNION|AS|ON)\\b"
+        },
+        "headerkey": {
+            "name": "keyword.other",
+            "match": "([A-Za-z\\-]+):\\s"
+        },
+        "keyword": {
+            "name": "keyword.control",
+            "match": "\\b(let|const)\\b"
+        },
+        "variable": {
+            "name": "variable",
+            "match": "\\$[A-Za-z0-9.-\\[\\]]*"
+        },
+        "json": {
+            "begin": "\\{",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.dictionary.begin.json"
+                }
+            },
+            "end": "\\}",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.dictionary.end.json"
+                }
+            },
+            "name": "meta.embedded.block.json",
+            "patterns": [
+                {
+                    "include": "source.json"
+                }
+            ]
+        },
+        "xml": {
+            "begin": "^\\s*(?=<\\S)",
+            "end": "^\\s*(\\#{3,}.*?)?\\s*$",
+            "name": "meta.embedded.block.xml",
+            "patterns": [
+                {
+                    "include": "text.xml"
+                }
+            ]
+        }
+    }
+}

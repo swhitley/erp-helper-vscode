@@ -49,6 +49,7 @@ export class OAuthProvider implements AuthenticationProvider, Disposable {
    * @returns 
    */
   public async getSessions(scopes?: string[]): Promise<readonly AuthenticationSession[]> {
+    scopes = scopes;
     return [];
   }
 
@@ -88,6 +89,7 @@ export class OAuthProvider implements AuthenticationProvider, Disposable {
    * @param sessionId 
    */
   public async removeSession(sessionId: string): Promise<void> {
+    sessionId = sessionId;
     //
   }
 
@@ -164,6 +166,7 @@ export class OAuthProvider implements AuthenticationProvider, Disposable {
    */
   private handleUri: (scopes: readonly string[]) => PromiseAdapter<Uri, string> = 
   (scopes) => async (uri:any, resolve:any, reject:any) => {
+    scopes = scopes;
     const query = new URLSearchParams(uri.query);
     const authToken = query.get('code');
     const state = query.get('state');

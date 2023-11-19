@@ -15,7 +15,7 @@ const extensionConfig = {
   mainFields: ["module", "main"],
   format: "cjs",
   entryPoints: ["./src/extension.ts"],
-  outfile: "./out/extension.js",
+  outfile: "./dist/extension.js",
   external: ["vscode"],
 };
 
@@ -27,16 +27,16 @@ const webviewConfig = {
     "./src/scripts/connections.ts",
     "./src/scripts/apicalls.ts",
   ],
-  outdir: "./out",
+  outdir: "./dist",
   plugins: [
     // Copy webview css and ttf files to `out` directory unaltered
     copy({
       resolveFrom: "cwd",
       assets: {
         from: ["./src/media/*.*"],
-        to: ["./out"],
+        to: ["./dist"],
       },
-    }),
+    })
   ],
 };
 

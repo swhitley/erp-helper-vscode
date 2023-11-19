@@ -2,7 +2,7 @@
   "name": "erp-helper",
   "displayName": "ERP Helper",
   "description": "Utilities for developing ERP integrations. Includes XSL transformation and Workday® API SOAP calls.",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "publisher": "WhitleyMedia",
   "author": {
     "name": "Shannon Whitley"
@@ -22,7 +22,7 @@
     "Other"
   ],
   "activationEvents": [],
-  "main": "./out/extension.js",
+  "main": "./dist/extension",
   "contributes": {
     "submenus": [
       {
@@ -104,6 +104,43 @@
         "command": "erp-helper.api-calls",
         "title": "API Calls",
         "category": "ERP Helper"
+      }
+    ],
+    "notebooks": [
+      {
+        "id": "wql-book",
+        "type": "wql-book",
+        "displayName": "WQL Book",
+        "selector": [
+          {
+            "filenamePattern": "*.wqlbook"
+          }
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "wql-book",
+        "aliases": [
+          "WQL Book"
+        ],
+        "filenamePatterns": [
+          "*.wql-book"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "wql-book",
+        "scopeName": "source.wql-book",
+        "path": "./syntaxes/wql-book.tmGrammar.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.javascript": "javascript",
+          "meta.embedded.block.json": "json",
+          "meta.embedded.block.html": "html",
+          "meta.embedded.block.xml": "xml",
+          "meta.embedded.block.css": "css"
+        }
       }
     ],
     "configuration": {
@@ -200,40 +237,61 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "node ./esbuild.js && tsc -p ./",
+    "vscode:prepublish": "webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch",
+    "compile": "webpack --mode none",
     "package": "NODE_ENV=production node ./esbuild.js && tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "watch": "webpack --mode none --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "test-compile": "tsc -p ./"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
+    "@types/lodash": "^4.14.200",
     "@types/mocha": "^10.0.1",
     "@types/node": "20.2.5",
     "@types/uuid": "^9.0.5",
     "@types/vscode": "^1.79.0",
     "@types/vscode-webview": "^1.57.1",
+    "@types/webpack-env": "^1.18.4",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "@vscode/test-electron": "^2.3.2",
     "esbuild": "^0.16.17",
     "eslint": "^8.41.0",
+    "file-loader": "^6.2.0",
     "glob": "^8.1.0",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@json2csv/transforms": "^7.0.3",
+    "@types/preact-i18n": "^2.3.6",
+    "@types/react": "^18.2.37",
+    "@types/vscode-notebook-renderer": "^1.72.2",
     "@vscode/codicons": "^0.0.33",
     "@vscode/vsce": "^2.21.0",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "axios": "^1.4.0",
     "base64url": "^3.0.1",
     "cheerio": "^1.0.0-rc.12",
+    "css-loader": "^6.8.1",
     "esbuild-plugin-copy": "^2.1.1",
     "fast-xml-parser": "^4.2.5",
+    "hot": "^0.0.7",
+    "json-stringify-safe": "^5.0.1",
+    "lodash": "^4.17.21",
+    "preact": "^10.18.2",
     "randomstring": "^1.3.0",
     "saxon-js": "^2.5.0",
-    "uuid": "^9.0.1"
+    "tabular-json": "^0.1.3",
+    "uuid": "^9.0.1",
+    "vscode-notebook-error-overlay": "^1.0.1"
   }
 }

@@ -6,6 +6,9 @@ import { XmlUtil } from "../utilities/xmlutil";
 import { Connection, ConnectionUtils } from "../utilities/connection";
 import axios from "axios";
 import * as cheerio from "cheerio";
+const css = require(".././media/style.css");
+const ttf = require(".././media/codicon.ttf");
+const codicon = require(".././media/codicon.css");
 
 
 export class ApiCallsPanel {
@@ -71,7 +74,7 @@ export class ApiCallsPanel {
         enableScripts: true,
         retainContextWhenHidden: true,
         enableCommandUris: true,
-        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'out')]
+        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'dist')]
       });
       ApiCallsPanel.currentPanel = new ApiCallsPanel(panel, context);
     } 
@@ -175,6 +178,7 @@ export class ApiCallsPanel {
       // Loop through the selected elements
       let message = "";
       links.each((index, value) => {
+        const i = index;
         const href = $(value).attr("href");              
         if (href) {
           if ( href.indexOf(".xsd") > 0) {
@@ -376,10 +380,10 @@ export class ApiCallsPanel {
   }
 
   private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
-    const webviewUri = getUri(webview, extensionUri, ["out", "apicalls.js"]);
-    const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
-    const codiconsUri = getUri(webview, extensionUri, ["out", "codicon.css"]);
-	
+    const webviewUri = getUri(webview, extensionUri, ["dist", "apicalls.js"]);
+    const styleUri = getUri(webview, extensionUri, ["dist", "style.css"]);
+    const codiconsUri = getUri(webview, extensionUri, ["dist", "codicon.css"]);
+  
     const nonce = getNonce();
     return `
       <!DOCTYPE html>

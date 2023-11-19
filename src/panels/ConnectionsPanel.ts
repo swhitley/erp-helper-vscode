@@ -34,7 +34,7 @@ export class ConnectionsPanel {
         retainContextWhenHidden: true,
         enableCommandUris: true,
         // Restrict the webview to only load resources from the `out` directory
-        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'out')]
+        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'dist')]
       });
       ConnectionsPanel.currentPanel = new ConnectionsPanel(panel, context);
     }
@@ -266,8 +266,8 @@ export class ConnectionsPanel {
   }
 
   private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
-    const webviewUri = getUri(webview, extensionUri, ["out", "connections.js"]);
-    const styleUri = getUri(webview, extensionUri, ["out", "style.css"]);
+    const webviewUri = getUri(webview, extensionUri, ["dist", "connections.js"]);
+    const styleUri = getUri(webview, extensionUri, ["dist", "style.css"]);
 
     const publisher = this._context.extension.packageJSON.publisher;
     const name = this._context.extension.packageJSON.name;

@@ -11,6 +11,7 @@ Install ERP Helper from the [Visual Studio Code Marketplace](https://marketplace
 * XSLT Transformation with Saxon-HE
 * Web Service sample SOAP request generator
 * Workday API Connector
+* WQL Notebooks (WQLBook)
 
 ### How to use
 
@@ -34,6 +35,16 @@ ERP Helper supports OAuth 2.0 and Basic Authentication. Authentication is requir
 For OAuth, you must use the Register API Client task in your Workday tenant.  See the example below for OAuth settings.  The Redirection URI is `vscode://WhitleyMedia.erp-helper`.
 
 ![image](https://github.com/swhitley/erp-helper-vscode/assets/413552/572d237c-8493-4f0d-8f8d-2d4030062c66)
+
+## WQL Books
+ERP Helper enables WQL query execution using a file type called `wqlbook`.  Create a file with the .wqlbook extension. Features are automatically enabled.
+* The last selected connection on the ERP Helper **Connections** page is used for the API connection.  Make sure you have OAuth configured.  You will need to update your access token regularly.
+* To switch connections or update your access token, right-click in the `Code` area and select ERP Helper -> Connections from the menu.
+* WQLBooks support JSON and HTML views.  Switch output views by clicking the elipses (...) next to the output cell and then select `Change Presentation`.
+* **IMPORTANT**: A WQLBook is a file that can be saved and shared with other users. The displayed data will also be shared as part of the file.  Clear the output cell and save the file before sharing if you do not wish to share the data.
+
+<img width="578" alt="image" src="https://github.com/swhitley/erp-helper-vscode/assets/413552/82853270-80dd-47a6-ac2a-cb513a8fd6f7">
+
 
 ## Extension Settings
 

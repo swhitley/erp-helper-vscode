@@ -65,7 +65,7 @@ export class ConnectionsPanel {
             this.btnAccessTokenGetOnClick(message.data);
             return;
           case "btnTestOnClick":
-            this.btnTestOnClick(message.data);
+            this.btnTestOnClick(message.data, message.saveModal);
             return;
           case "btnSaveOnClick":
             var conn = new Connection();
@@ -114,8 +114,7 @@ export class ConnectionsPanel {
       }
       const connStr = JSON.stringify(data);
       const session = await vscode.authentication.getSession("workday", [connStr], { createIfNone: true });
-      this._panel.webview.postMessage({ command: 'btnAccessTokenGetOnClick', message: session.accessToken });
-      vscode.window.showInformationMessage("Test and save the connection to store the new access token.", {modal: true});
+      await this._panel.webview.postMessage({ command: 'btnAccessTokenGetOnClick', message: session.accessToken });
     }
     catch(ex) {
       vscode.window.showErrorMessage("Get Access Token Error: " + ex);
@@ -123,11 +122,13 @@ export class ConnectionsPanel {
     }
   }
 
-  public async btnTestOnClick(data: Connection) {
+  public async btnTestOnClick(data: Connection, saveModal: boolean = true) {
     const url = await this.ServiceUrlGet(data);
     if (url && url.length > 0 && url.indexOf("/ccx/service") > 0) {
       this._panel.webview.postMessage({ command: 'btnTestOnClick', message: url + "/" + data.tenant + "/" });
-      vscode.window.showInformationMessage("Successful Test\nClick Save to store the connection.", {modal: true});
+      if (saveModal) {
+        vscode.window.showInformationMessage("Successful Test\nClick Save to store the connection.", {modal: true});
+      }
     }
     else {
       if (url && url.length > 0) {

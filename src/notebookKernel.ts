@@ -48,20 +48,73 @@ export class NotebookKernel {
         execution.executionOrder = ++this._executionOrder;
 		execution.start(Date.now());
 
-        try {          
-            
-            const cellText = execution.cell.document.getText();
+        try {
+            // Get all cells and look for lists        
+            const cells = cell.notebook.getCells();
+            var lists: Record<string, string> = {};
+            var keyValue: {row: number, key: string, value: string};
+            var keyValues = new Array<typeof keyValue>();
+            var outputList = false;
+            var outputHtmlType = false;
+            cells.forEach(doc => {
+                var lines = doc.document.getText().split('\n');
+                // Check for a 'LIST' command
+                if (lines.length > 0 && lines[0].trim().toLowerCase().indexOf('list') === 0 && 
+                        lines[0].trim().split(' ').length > 1) {
+                    if (lines[0].trim().split(' ').length === 3) {
+                        if (lines[0].trim().split(' ')[2].trim().toLowerCase() === 'output') {
+                            outputList = true;
+                        }
+                    }
+                    // List name array
+                    const listName = lines[0].trim().split(' ')[1];
+                    const setLines = new Set(lines);
+                    var uniqueLines = [...setLines];
+                    uniqueLines.shift();
+                    // Remove empty lines
+                    uniqueLines = uniqueLines.filter(function(e){return e.trim().length > 0;});
+                    uniqueLines = uniqueLines.map(function(e){return e = e.replace('\'', '\\\'');});
+                    lists[listName] = '(\'' + uniqueLines.join('\',\'') + '\')';
+                    if(outputList) {
+                        var index = 0;
+                        if (lines) {
+                            lines.forEach(line => {
+                                keyValue = {row: index++, key: line.trim(), value: ''};
+                                keyValues.push(keyValue);               
+                            });
+                            keyValues.shift();
+                        }
+                    }                
+                }
+            });
+
+            // Get the WQL text
+            const cellText = execution.cell.document.getText();            
 
             // Parse cell text
             const cmds = cellText.split(";");
-            var wql;
+            var wql = '';
         
             cmds.forEach(cmd => {
                 if (cmd.trim().length > 0) {
-                    wql = cmd;
+                    if (cmd.trim().split(' ').length > 0) {
+                        if (cmd.trim().split(' ').length > 1 && 
+                            cmd.trim().split(' ')[0].toLowerCase() === 'output' && 
+                            cmd.trim().split(' ')[1].toLowerCase() === 'html') {
+                                outputHtmlType = true;
+                        }
+                        else {
+                            wql = cmd;
+                        }
+                    }                    
                 }
-            }); 
-
+            });
+            
+            if (wql) {
+                for (var key in lists) {
+                    wql = wql.replace('{' + key + '}', lists[key]);
+                }               
+            }
             const results = await this.apiCall(wql);
 
             var outputHtml = '';
@@ -69,13 +122,39 @@ export class NotebookKernel {
             if (results) {
                 outputJson = results;
                 const json = JSON.parse(results);
+                if (outputList) {
+                    if (keyValues && keyValues.length > 0) {
+                        keyValues.forEach(keyValue => {
+                            if (json.data) {
+                                json.data.forEach( (item: typeof keyValue) => {
+                                    if (item.key === keyValue.key ) {
+                                        keyValue.value = item.value;
+                                    }
+                                });
+                            }
+                        });
+                        if (json && json.data) {
+                            json.data = keyValues;
+                        }
+                    }
+                    outputHtmlType = true;
+                }
                 if (json.data) {
-                    var tabularOpts = {
-                        dot: "/",
-                        separator: '  ',
-                        classes: {table: "table table-striped table-bordered"}
-                    };                       
-                    outputHtml = tabular.html(json.data, tabularOpts);
+                    if (outputList) {
+                        outputHtml = '<table>';
+                        json.data.forEach( (row: { value: string; }) => {
+                            outputHtml += '<tr><td>' + row.value + "</td></tr>";
+                        });
+                        outputHtml += '</table>';
+                    }
+                    else {
+                        var tabularOpts = {
+                            dot: "/",
+                            separator: '  ',
+                            classes: {table: "table table-striped table-bordered"}
+                        };                       
+                        outputHtml = tabular.html(json.data, tabularOpts);
+                    }
                 }
             }
             if (outputHtml.length === 0) {
@@ -87,9 +166,24 @@ export class NotebookKernel {
                 styleUri = this._context?.extensionUri.path + '/dist/style.css';
             }
 
+            var outputText = [];
+            var outputMimeType = [];
+            if (outputHtmlType) {
+                outputText.push(outputHtml);
+                outputText.push(outputJson);
+                outputMimeType.push('text/html');
+                outputMimeType.push('text/plain');                
+            }
+            else {
+                outputText.push(outputJson);
+                outputText.push(outputHtml);
+                outputMimeType.push('application/json');
+                outputMimeType.push('text/html');
+            }
+
             execution.replaceOutput([new vscode.NotebookCellOutput([
-                vscode.NotebookCellOutputItem.text(outputJson, 'application/json'),
-                vscode.NotebookCellOutputItem.text(outputHtml, 'text/html')
+                vscode.NotebookCellOutputItem.text(outputText[0], outputMimeType[0]),
+                vscode.NotebookCellOutputItem.text(outputText[1], outputMimeType[1])
             ])]);
 
             execution.end(true, Date.now());

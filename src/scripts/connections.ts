@@ -11,6 +11,7 @@ provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeDropdown(),
   vsCodeRadio(), vsCodePanels(), vsCodePanelTab(), vsCodePanelView());
 
 const vscode = acquireVsCodeApi();
+let _saveModal: boolean = true;
 
 window.addEventListener("load", main);
 
@@ -27,9 +28,16 @@ window.addEventListener('message', event => {
           const btnSave = document.getElementById("btnSave") as Button;
           btnSave.disabled = false;
         }
+        if (!_saveModal) {
+          _saveModal = true;
+          btnSaveOnClick();
+
+        }
         break;
         case "btnAccessTokenGetOnClick":
           $.txtAccessToken.value = message.message;
+          _saveModal = false;
+          btnTestOnClick();
         break;        
       case 'btnSaveOnClick':
         if ($.txtName.value.length > 0) {
@@ -168,6 +176,7 @@ function btnTestOnClick() {
   vscode.postMessage({
     command: "btnTestOnClick",
     data: test,
+    saveModal: _saveModal
   });
 }
 

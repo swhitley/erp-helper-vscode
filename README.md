@@ -45,6 +45,54 @@ ERP Helper enables WQL query execution using a file type called `wqlbook`.  Crea
 
 <img width="578" alt="image" src="https://github.com/swhitley/erp-helper-vscode/assets/413552/82853270-80dd-47a6-ac2a-cb513a8fd6f7">
 
+### WQL Book Commands
+**OUTPUT HTML** - Use the `OUTPUT HTML` command in a code cell to change the output so that it defaults to HTML.  Example:  `SELECT lastName FROM allWorkers; OUTPUT HTML`
+
+**LIST {list name} {opt: 'output'}** - Use the list command in a markup cell (not within the WQL code cell).  Build a list of items that can be converted into a WQL "in" list.  The list command has one mandatory parameter and one optional parameter.
+
+**LIST {list name}** - The `list name` is required if the list should be used in a WQL query. The `list name` must match the replacement text in the query. Surrounding braces are used in the query to identify the replacement text.
+
+**LIST {list name} output** - The `output` parameter alters the output of the WQL query.  The output is based on the key values in the list.  A lookup is performed in the query for each key, and the associated value will be returned in the output list.
+
+**Example:**
+
+WQL Code: 
+
+`SELECT name as key, referenceID1 as value FROM supervisoryOrganizations WHERE name in {list1}`
+
+LIST Text:
+
+<code>LIST list1 output
+Human Resources
+Finance & Administration
+Information Technology
+Operations
+Risk Management
+Accounting Operations
+Financial Planning & Analysis
+SEC Reporting
+Planning & Analysis
+Accounts Receivable
+Accounts Payable</code>
+
+1. As the query is executed, the `{list1}` replacement text in the WQL query will be replaced by the unique values in a WQL list:  `('Human Resources', 'Finance & Administration',...)`
+2. The query will return the names and associated reference ids.  The labels `key` and `value` in the query are critical for output list matching.
+3. Due to the `output` LIST parameter, the resulting output will contain the translated values from the LIST (the reference ids of the matching supervisory organizations).
+
+Output:
+
+<code>Human_Resources_supervisory
+Finance_Administration_supervisory
+Information_Technology_supervisory
+Operations_supervisory
+Risk_Management_supervisory
+Accounting_Operations_supervisory
+Financial_Planning_supervisory
+SEC_Reporting_supervisory
+Planning_Analysis_supervisory
+Accounts_Receivable_supervisory
+Accounts_Payable_supervisory</code>
+
 
 ## Extension Settings
 

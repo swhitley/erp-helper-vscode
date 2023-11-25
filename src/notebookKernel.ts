@@ -58,23 +58,29 @@ export class NotebookKernel {
             var outputHtmlType = false;
             cells.forEach(doc => {
                 var lines = doc.document.getText().split('\n');
+                // Remove empty lines
+                lines = lines.filter(function(l){return l.trim().length > 0;});
                 // Check for a 'LIST' command
                 if (lines.length > 0 && lines[0].trim().toLowerCase().indexOf('list') === 0 && 
                         lines[0].trim().split(' ').length > 1) {
+                    // List name parameter
+                    const listName = lines[0].trim().split(' ')[1];
+                    // Output parameter
                     if (lines[0].trim().split(' ').length === 3) {
                         if (lines[0].trim().split(' ')[2].trim().toLowerCase() === 'output') {
                             outputList = true;
                         }
-                    }
-                    // List name array
-                    const listName = lines[0].trim().split(' ')[1];
+                    }                    
+                    // Build query list
                     const setLines = new Set(lines);
                     var uniqueLines = [...setLines];
                     uniqueLines.shift();
-                    // Remove empty lines
-                    uniqueLines = uniqueLines.filter(function(e){return e.trim().length > 0;});
-                    uniqueLines = uniqueLines.map(function(e){return e = e.replace('\'', '\\\'');});
-                    lists[listName] = '(\'' + uniqueLines.join('\',\'') + '\')';
+                    
+                    // Escape single quotes
+                    const escaptedLines = uniqueLines.map(function(e){return e = e.replace('\'', '\\\'');});
+                    lists[listName] = '(\'' + escaptedLines.join('\',\'') + '\')';
+
+                    // Build output list
                     if(outputList) {
                         var index = 0;
                         if (lines) {
